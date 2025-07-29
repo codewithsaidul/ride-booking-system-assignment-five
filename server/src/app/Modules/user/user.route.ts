@@ -12,5 +12,6 @@ router.post("/register", validateRequest(createUserZodSchema), UserController.cr
 router.get("/all-users", UserController.getAllUsers);
 router.get("/:userId", UserController.getSingleUser);
 router.patch("/:userId", validateRequest(updateUserZodSchema), UserController.updateUserInfo);
+router.delete("/:userId", UserController.deleteUser);
 
 export const userRoutes = router;

@@ -41,9 +41,6 @@ const createUser = async (payload: Partial<IUser>) => {
   return user;
 };
 
-
-
-
 // Function to get all users with pagination, filtering, searching, and sorting
 // It uses the QueryBuilder utility to build the query based on the provided parameters
 const getAllUsers = async (query: Record<string, string>) => {
@@ -71,8 +68,6 @@ const getAllUsers = async (query: Record<string, string>) => {
   };
 };
 
-
-
 // Function to get a single user by ID
 //  only admin can access this endpoint
 // It retrieves the user from the database and excludes the password field
@@ -83,8 +78,6 @@ const getSingleUser = async (userId: string) => {
   }
   return user;
 };
-
-
 
 // Function to update user information
 // It uses the User model to find the user by ID and update the provided fields
@@ -112,6 +105,28 @@ const updateUserInfo = async (userId: string, payload: Partial<IUser>) => {
 
 
 
+// Function to delete a user by ID
+// It Only Admins can access this endpoint
+// It sets the isDeleted field to true, effectively soft-deleting the user
+// This allows the user to be restored later if needed
+const deleteUser = async (userId: string) => {
+  const isUserExist = await User.findById(userId);
+
+  //   Check if user exists before attempting to delete
+  if (!isUserExist) {
+    throw new Error("User not found");
+  }
+
+  //   Delete the user by ID
+  //   Note: This will set the isDeleted field to true, effectively soft-deleting the user
+  await User.findByIdAndUpdate(
+    userId,
+    { isDeleted: true },
+    { runValidators: true }
+  );
+  return null;
+};
+
 // Exporting the UserService object with methods
 // This allows the UserService to be used in the user.controller.ts file
 // The methods include createUser, getAllUsers, updateUserInfo, and getSingleUser
@@ -120,4 +135,5 @@ export const UserService = {
   getAllUsers,
   updateUserInfo,
   getSingleUser,
+  deleteUser,
 };
