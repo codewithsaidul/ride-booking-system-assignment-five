@@ -1,5 +1,3 @@
-
-
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -8,7 +6,14 @@ interface ENVCONFIG {
   DB_URL: string;
   NODE_ENV: "development" | "production";
   BCRYPT_SALT_ROUND: string;
-  EXPRESS_SESSION_SECRET: string
+  EXPRESS_SESSION_SECRET: string;
+
+  JWT: {
+    JWT_ACCESS_SECRET: string;
+    JWT_ACCESS_EXPIRATION_TIME: string;
+    JWT_REFRESH_SECRET: string;
+    JWT_REFRESH_EXPIRATION_TIME: string;
+  };
 }
 
 const loadEnvVariable = (): ENVCONFIG => {
@@ -17,7 +22,12 @@ const loadEnvVariable = (): ENVCONFIG => {
     "DB_URL",
     "NODE_ENV",
     "BCRYPT_SALT_ROUND",
-    "EXPRESS_SESSION_SECRET"
+    "EXPRESS_SESSION_SECRET",
+
+    "JWT_ACCESS_SECRET",
+    "JWT_ACCESS_EXPIRATION_TIME",
+    "JWT_REFRESH_SECRET",
+    "JWT_REFRESH_EXPIRATION_TIME",
   ];
 
   requiredEnvVariables.forEach((key) => {
@@ -32,6 +42,13 @@ const loadEnvVariable = (): ENVCONFIG => {
     NODE_ENV: process.env.NODE_ENV as "development" | "production",
     BCRYPT_SALT_ROUND: process.env.BCRYPT_SALT_ROUND as string,
     EXPRESS_SESSION_SECRET: process.env.EXPRESS_SESSION_SECRET as string,
+
+    JWT: {
+      JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET as string,
+      JWT_ACCESS_EXPIRATION_TIME: process.env.JWT_ACCESS_EXPIRATION_TIME as string,
+      JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,
+      JWT_REFRESH_EXPIRATION_TIME: process.env.JWT_REFRESH_EXPIRATION_TIME as string,
+    }, 
   };
 };
 

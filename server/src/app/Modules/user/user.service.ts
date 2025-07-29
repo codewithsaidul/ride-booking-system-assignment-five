@@ -1,4 +1,6 @@
+import { StatusCodes } from "http-status-codes";
 import { envVars } from "../../config/env";
+import { AppError } from "../../errorHelpers/AppError";
 import { QueryBuilder } from "../../utils/queryBuilder";
 import { userSearchableFields } from "./user.constants";
 import { IAUTHPROVIDER, IUser } from "./user.interface";
@@ -13,7 +15,7 @@ const createUser = async (payload: Partial<IUser>) => {
 
   //   Check if user already exists
   if (isUserExist) {
-    throw new Error("User already exists with this email");
+    throw new AppError(StatusCodes.CONFLICT,"User already exists with this email");
   }
 
   //   password hashing
@@ -45,7 +47,7 @@ const createUser = async (payload: Partial<IUser>) => {
 // It uses the QueryBuilder utility to build the query based on the provided parameters
 const getAllUsers = async (query: Record<string, string>) => {
   //   Create a QueryBuilder instance with the User model and the query
-  const queryBuilder = new QueryBuilder(User.find().select("-password"), query);
+  const queryBuilder = new QueryBuilder(User.find(), query);
 
   //   Apply filters, search, sort, fields, and pagination using the QueryBuilder methods
   const users = queryBuilder
@@ -58,7 +60,7 @@ const getAllUsers = async (query: Record<string, string>) => {
   //   Execute the query and get the data and metadata
   //   The data will be an array of users, and the meta will contain pagination info
   const [data, meta] = await Promise.all([
-    users.build(),
+    users.build().select("-password -auths"),
     queryBuilder.getMeta(),
   ]);
 
@@ -74,7 +76,7 @@ const getAllUsers = async (query: Record<string, string>) => {
 const getSingleUser = async (userId: string) => {
   const user = await User.findById(userId).select("-password");
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
   }
   return user;
 };
@@ -86,11 +88,11 @@ const updateUserInfo = async (userId: string, payload: Partial<IUser>) => {
   const user = await User.findById(userId);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
   }
 
   if (payload.email) {
-    throw new Error("Email cannot be updated");
+    throw new AppError(StatusCodes.BAD_REQUEST, "Email cannot be updated");
   }
 
   const updateUser = await User.findByIdAndUpdate(userId, payload, {
@@ -114,7 +116,7 @@ const deleteUser = async (userId: string) => {
 
   //   Check if user exists before attempting to delete
   if (!isUserExist) {
-    throw new Error("User not found");
+    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
   }
 
   //   Delete the user by ID
