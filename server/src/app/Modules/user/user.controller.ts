@@ -4,10 +4,9 @@ import { TNext, TRequest, TResponse } from "../../types/global";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { UserService } from "./user.service";
+import { JwtPayload } from "jsonwebtoken";
 
 // Function to create a new user
-// It uses the UserService to create a user with the provided payload
-// The request body is validated using the createUserZodSchema and the validateRequest middleware
 const createUser = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
     // logic for creating a user goes here
@@ -25,8 +24,7 @@ const createUser = catchAsync(
 );
 
 // Function to get all users
-// It uses the UserService to fetch users with pagination, filtering, searching, and sorting
-// only admin can access this endpoint
+
 const getAllUsers = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
     //  logic for getting all users goes here
@@ -70,8 +68,10 @@ const updateUserInfo = catchAsync(
     // logic for updating user info goes here
     const { userId } = req.params;
     const payload = req.body;
+    const decodedToken = req.user as JwtPayload
 
-    const updatedUser = await UserService.updateUserInfo(userId, payload);
+
+    const updatedUser = await UserService.updateUserInfo(userId, payload, decodedToken);
 
     sendResponse(res, {
       statusCode: StatusCodes.OK,
@@ -85,7 +85,7 @@ const updateUserInfo = catchAsync(
 
 
 
-// Function to delete a user by ID
+
 // It uses the UserService to delete the user with the provided userId
 const deleteUser = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
@@ -103,8 +103,9 @@ const deleteUser = catchAsync(
   }
 );
 
+
+
 // Exporting the UserController object with methods
-// This allows the UserController to be used in the user.route.ts file
 export const UserController = {
   createUser,
   getAllUsers,

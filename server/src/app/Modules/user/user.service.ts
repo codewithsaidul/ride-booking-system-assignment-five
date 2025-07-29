@@ -3,9 +3,10 @@ import { envVars } from "../../config/env";
 import { AppError } from "../../errorHelpers/AppError";
 import { QueryBuilder } from "../../utils/queryBuilder";
 import { userSearchableFields } from "./user.constants";
-import { IAUTHPROVIDER, IUser } from "./user.interface";
+import { IAUTHPROVIDER, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import bcrypt from "bcryptjs";
+import { JwtPayload } from "jsonwebtoken";
 
 // Function to create a new user
 const createUser = async (payload: Partial<IUser>) => {
@@ -15,7 +16,10 @@ const createUser = async (payload: Partial<IUser>) => {
 
   //   Check if user already exists
   if (isUserExist) {
-    throw new AppError(StatusCodes.CONFLICT,"User already exists with this email");
+    throw new AppError(
+      StatusCodes.CONFLICT,
+      "User already exists with this email"
+    );
   }
 
   //   password hashing
@@ -72,7 +76,6 @@ const getAllUsers = async (query: Record<string, string>) => {
 
 // Function to get a single user by ID
 //  only admin can access this endpoint
-// It retrieves the user from the database and excludes the password field
 const getSingleUser = async (userId: string) => {
   const user = await User.findById(userId).select("-password");
   if (!user) {
@@ -83,16 +86,57 @@ const getSingleUser = async (userId: string) => {
 
 // Function to update user information
 // It uses the User model to find the user by ID and update the provided fields
-// The updated user is returned after the update operation
-const updateUserInfo = async (userId: string, payload: Partial<IUser>) => {
-  const user = await User.findById(userId);
+const updateUserInfo = async (
+  userId: string,
+  payload: Partial<IUser>,
+  decodedToken: JwtPayload
+) => {
+  if (decodedToken.role === Role.RIDER && decodedToken.role === Role.DRIVER) {
+    if (decodedToken.userId !== userId) {
+      throw new AppError(
+        StatusCodes.UNAUTHORIZED,
+        "You are not authorized for this action"
+      );
+    }
+  }
 
-  if (!user) {
+  const isUserExist = await User.findById(userId);
+
+  if (!isUserExist) {
     throw new AppError(StatusCodes.NOT_FOUND, "User not found");
   }
 
   if (payload.email) {
     throw new AppError(StatusCodes.BAD_REQUEST, "Email cannot be updated");
+  }
+
+  if (payload.role) {
+    if (decodedToken.role === Role.RIDER && decodedToken.role === Role.DRIVER) {
+      throw new AppError(
+        StatusCodes.UNAUTHORIZED,
+        "You are not authorized for this action"
+      );
+    }
+
+    const isSelf = isUserExist.email === decodedToken.email;
+    const tryingToDowngradeSelf =
+      payload.role === Role.RIDER || payload.role === Role.DRIVER;
+
+    if (isSelf && decodedToken.role === Role.ADMIN && tryingToDowngradeSelf) {
+      throw new AppError(
+        StatusCodes.FORBIDDEN,
+        "You cann't chang your own role"
+      );
+    }
+  }
+
+  if (payload.isActive || payload.isDeleted || payload.isVerified) {
+    if (decodedToken.role === Role.RIDER && decodedToken.role === Role.DRIVER) {
+      throw new AppError(
+        StatusCodes.UNAUTHORIZED,
+        "You are not authorized for this action"
+      );
+    }
   }
 
   const updateUser = await User.findByIdAndUpdate(userId, payload, {
@@ -103,14 +147,8 @@ const updateUserInfo = async (userId: string, payload: Partial<IUser>) => {
   return updateUser;
 };
 
-
-
-
-
-// Function to delete a user by ID
-// It Only Admins can access this endpoint
+// Function to delete a user by ID & Only Admin can access this endpoint
 // It sets the isDeleted field to true, effectively soft-deleting the user
-// This allows the user to be restored later if needed
 const deleteUser = async (userId: string) => {
   const isUserExist = await User.findById(userId);
 
@@ -130,8 +168,6 @@ const deleteUser = async (userId: string) => {
 };
 
 // Exporting the UserService object with methods
-// This allows the UserService to be used in the user.controller.ts file
-// The methods include createUser, getAllUsers, updateUserInfo, and getSingleUser
 export const UserService = {
   createUser,
   getAllUsers,
