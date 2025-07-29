@@ -31,7 +31,6 @@ const getAllUsers = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
     //  logic for getting all users goes here
     const query = req.query;
-
     const users = await UserService.getAllUsers(
       query as Record<string, string>
     );
