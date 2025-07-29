@@ -7,12 +7,14 @@ import { UserService } from "./user.service";
 
 
 
+// Function to create a new user
+// It uses the UserService to create a user with the provided payload
+// The request body is validated using the createUserZodSchema and the validateRequest middleware
 const createUser = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
     // Your logic for creating a user goes here
     const payload = req.body;
 
-    
     const user = await UserService.createUser(payload);
 
     sendResponse(res, {
@@ -24,6 +26,50 @@ const createUser = catchAsync(
   }
 );
 
+
+// Function to get all users
+// It uses the UserService to fetch users with pagination, filtering, searching, and sorting
+// only admin can access this endpoint
+const getAllUsers = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    // Your logic for getting all users goes here
+    const query = req.query;
+
+    const users = await UserService.getAllUsers(query as Record<string, string>);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Users retrieved successfully",
+      data: users.data,
+      meta: users.meta,
+    });
+  }
+);
+
+// Function to get a single user by ID
+// only admin can access this endpoint
+const getSingleUser = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    // Your logic for getting a single user goes here
+    const { userId } = req.params;
+
+    const user = await UserService.getSingleUser(userId);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "User retrieved successfully",
+      data: user,
+    });
+  }
+);
+
+
+// Exporting the UserController object with methods
+// This allows the UserController to be used in the user.route.ts file
 export const UserController = {
   createUser,
+  getAllUsers, 
+  getSingleUser, 
 };
