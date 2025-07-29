@@ -5,7 +5,6 @@ import { IAUTHPROVIDER, IUser } from "./user.interface";
 import { User } from "./user.model";
 import bcrypt from "bcryptjs";
 
-
 // Function to create a new user
 const createUser = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload;
@@ -43,6 +42,8 @@ const createUser = async (payload: Partial<IUser>) => {
 };
 
 
+
+
 // Function to get all users with pagination, filtering, searching, and sorting
 // It uses the QueryBuilder utility to build the query based on the provided parameters
 const getAllUsers = async (query: Record<string, string>) => {
@@ -76,15 +77,47 @@ const getAllUsers = async (query: Record<string, string>) => {
 //  only admin can access this endpoint
 // It retrieves the user from the database and excludes the password field
 const getSingleUser = async (userId: string) => {
-    const user = await User.findById(userId).select("-password");
-    if (!user) {
-        throw new Error("User not found");
-    }
-    return user;
-}
+  const user = await User.findById(userId).select("-password");
+  if (!user) {
+    throw new Error("User not found");
+  }
+  return user;
+};
 
+
+
+// Function to update user information
+// It uses the User model to find the user by ID and update the provided fields
+// The updated user is returned after the update operation
+const updateUserInfo = async (userId: string, payload: Partial<IUser>) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (payload.email) {
+    throw new Error("Email cannot be updated");
+  }
+
+  const updateUser = await User.findByIdAndUpdate(userId, payload, {
+    new: true,
+    runValidators: true,
+  });
+
+  return updateUser;
+};
+
+
+
+
+
+// Exporting the UserService object with methods
+// This allows the UserService to be used in the user.controller.ts file
+// The methods include createUser, getAllUsers, updateUserInfo, and getSingleUser
 export const UserService = {
   createUser,
   getAllUsers,
+  updateUserInfo,
   getSingleUser,
 };

@@ -12,7 +12,7 @@ import { UserService } from "./user.service";
 // The request body is validated using the createUserZodSchema and the validateRequest middleware
 const createUser = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
-    // Your logic for creating a user goes here
+    // logic for creating a user goes here
     const payload = req.body;
 
     const user = await UserService.createUser(payload);
@@ -32,7 +32,7 @@ const createUser = catchAsync(
 // only admin can access this endpoint
 const getAllUsers = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
-    // Your logic for getting all users goes here
+    //  logic for getting all users goes here
     const query = req.query;
 
     const users = await UserService.getAllUsers(query as Record<string, string>);
@@ -51,7 +51,7 @@ const getAllUsers = catchAsync(
 // only admin can access this endpoint
 const getSingleUser = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
-    // Your logic for getting a single user goes here
+    // logic for getting a single user goes here
     const { userId } = req.params;
 
     const user = await UserService.getSingleUser(userId);
@@ -66,10 +66,32 @@ const getSingleUser = catchAsync(
 );
 
 
+// Function to update user information
+// It uses the UserService to update the user with the provided userId and payload
+const updateUserInfo = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    // logic for updating user info goes here
+    const { userId } = req.params;
+    const payload = req.body;
+
+    const updatedUser = await UserService.updateUserInfo(userId, payload);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "User has been updated successfully",
+      data: updatedUser,
+    });
+  }
+
+)
+
+
 // Exporting the UserController object with methods
 // This allows the UserController to be used in the user.route.ts file
 export const UserController = {
   createUser,
-  getAllUsers, 
-  getSingleUser, 
+  getAllUsers,
+  getSingleUser,
+  updateUserInfo,
 };
