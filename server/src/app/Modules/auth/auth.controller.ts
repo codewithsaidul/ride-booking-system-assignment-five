@@ -32,6 +32,8 @@ const credentialsLogin = catchAsync(
 
         const { accessToken, refreshToken } = createUserToken(user);
 
+        setAuthCookie(res, { accessToken, refreshToken });
+
         sendResponse(res, {
           statusCode: StatusCodes.OK,
           success: true,
@@ -58,6 +60,26 @@ const credentialsLogin = catchAsync(
   }
 );
 
+const getNewAccessToken = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const refreshToken = req?.cookies?.refreshToken;
+
+    const tokenInfo = await AuthService.getNewAccessToken(refreshToken);
+
+    setAuthCookie(res, tokenInfo);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "New access token generated successfully",
+      data: tokenInfo,
+    });
+  }
+);
+
+
+
+// This function handles the Google OAuth callback.
 const googleCallbackURL = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
     let redirectTo = req.query.state ? (req.query.state as string) : "";
@@ -82,5 +104,6 @@ const googleCallbackURL = catchAsync(
 
 export const AuthController = {
   credentialsLogin,
+  getNewAccessToken,
   googleCallbackURL,
 };

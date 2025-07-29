@@ -7,6 +7,7 @@ import { envVars } from "../../config/env";
 const router = Router();
 
 router.post("/login", AuthController.credentialsLogin);
+router.post("/refresh-token", AuthController.getNewAccessToken);
 router.get("/google", async (req: TRequest, res: TResponse, next: TNext) => {
   const redirect = req.query.redirect || "/";
   passport.authenticate("google", {

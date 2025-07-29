@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { StatusCodes } from "http-status-codes";
 import { AppError } from "../../errorHelpers/AppError";
-import { createUserToken } from "../../utils/userToken";
+import { createAccessTokenWithRefreshToken, createUserToken } from "../../utils/userToken";
 import { IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
 
@@ -47,8 +47,22 @@ const credentialsLogin = async (payload: Partial<IUser>) => {
 };
 
 
+const getNewAccessToken = async (refreshToken: string) => {
+  // Logic to verify the refresh token and generate a new access token
+  if (!refreshToken) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "You haven't any refresh token");
+  }
+
+  const newAccessToken = await createAccessTokenWithRefreshToken(refreshToken);
+  return {
+    accessToken: newAccessToken,
+  };  
+}
+
+
 
 // Exporting the AuthService 
 export const AuthService = {
   credentialsLogin,
+  getNewAccessToken,
 };
