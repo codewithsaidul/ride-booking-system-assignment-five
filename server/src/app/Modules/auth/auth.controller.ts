@@ -9,6 +9,7 @@ import { AppError } from "../../errorHelpers/AppError";
 import { createUserToken } from "../../utils/userToken";
 import { setAuthCookie } from "../../utils/setCookie";
 import { envVars } from "../../config/env";
+import { JwtPayload } from "jsonwebtoken";
 
 // This function handles user login using credentials (email and password).
 const credentialsLogin = catchAsync(
@@ -60,6 +61,9 @@ const credentialsLogin = catchAsync(
   }
 );
 
+
+
+// This function handles the generation of a new access token using a refresh token.
 const getNewAccessToken = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
     const refreshToken = req?.cookies?.refreshToken;
@@ -78,6 +82,104 @@ const getNewAccessToken = catchAsync(
 );
 
 
+
+// This function handles log out
+const logout = catchAsync(async (req: TRequest, res: TResponse, next: TNext) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true, // Safer from XSS
+    secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
+    sameSite: "lax"
+  });
+
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true, // Safer from XSS
+    secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
+    sameSite: "lax"
+  });
+
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "User Logged Out Successfully",
+    data: null
+  })
+
+})
+
+
+
+// This function handles changing the user's password.
+const changePassword = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const { oldPassword, newPassword } = req.body;
+    const decodedToken = req.user as JwtPayload;
+
+    await AuthService.changePassword(
+      decodedToken.userId,
+      oldPassword,
+      newPassword
+    );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Password changed successfully",
+      data: null,
+    });
+  }
+);
+
+// This function handles setting a new password for the user.
+const setPassword = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const { password } = req.body;
+
+    const decodedToken = req.user as JwtPayload;
+
+    await AuthService.setPassword(decodedToken.userId, password);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Password set successfully",
+      data: null,
+    });
+  }
+);
+
+// This function handles the forgot password process.
+const forgotPassword = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const { email } = req.body;
+
+    const resetLink = await AuthService.forgotPassword(email);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Password reset link sent successfully",
+      data: resetLink,
+    });
+  }
+);
+
+// This function handles resetting the user's password.
+const resetPassword = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const decodedToken = req.user as JwtPayload;
+
+    await AuthService.resetPassword(req.body, decodedToken);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Password reset successfully",
+      data: null,
+    });
+  }
+);
 
 // This function handles the Google OAuth callback.
 const googleCallbackURL = catchAsync(
@@ -105,5 +207,10 @@ const googleCallbackURL = catchAsync(
 export const AuthController = {
   credentialsLogin,
   getNewAccessToken,
+  logout,
+  changePassword,
+  setPassword,
+  forgotPassword,
+  resetPassword,
   googleCallbackURL,
 };
