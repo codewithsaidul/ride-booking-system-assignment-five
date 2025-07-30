@@ -1,16 +1,30 @@
+import dayjs from "dayjs";
 import { StatusCodes } from "http-status-codes";
 import { AppError } from "../../errorHelpers/AppError";
 import { calculateDistanceInKm } from "../../utils/calculateDistanceInKm";
 import { calculateFare } from "../../utils/calculateFare";
+import { cancelledRideToday } from "../../utils/cancelledRideToday";
+import { Availability, DriverStatus } from "../driver/driver.interface";
+import { Driver } from "../driver/driver.model";
 import { User } from "../user/user.model";
 import { IRides, RideStatus } from "./ride.interface";
 import { Ride } from "./ride.model";
+import { rideStatusFlow } from "./ride.status";
 
 const requestRide = async (payload: Partial<IRides>, userId: string) => {
   const isUserExist = await User.findById(userId);
 
   if (!isUserExist) {
     throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  const todaysCancelledCount = await cancelledRideToday(userId);
+
+  if (todaysCancelledCount >= 3) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      "You cannot request a ride today as you have cancelled 3 rides already."
+    );
   }
 
   const lat1 = payload.pickedupLocation?.coordinates[0] as number;
@@ -32,6 +46,32 @@ const requestRide = async (payload: Partial<IRides>, userId: string) => {
   return rideRequested;
 };
 
+const viewRideHistroy = async (userId: string) => {
+  const isUserExist = await User.findById(userId);
+
+  if (!isUserExist) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  if (isUserExist._id.toString() !== userId) {
+    throw new AppError(
+      StatusCodes.UNAUTHORIZED,
+      "You are not authorized for this action"
+    );
+  }
+
+  const rideHistroy = await Ride.find({
+    $and: [
+      { rider: userId },
+      {
+        rideStatus: { $nin: ["accepted", "picked_up", "in_transit"] },
+      },
+    ],
+  });
+
+  return rideHistroy;
+};
+
 const cancelRide = async (
   userId: string,
   rideId: string,
@@ -41,6 +81,13 @@ const cancelRide = async (
 
   if (!isUserExist) {
     throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  if (isUserExist._id.toString() !== userId) {
+    throw new AppError(
+      StatusCodes.UNAUTHORIZED,
+      "You are not authorized for this action"
+    );
   }
 
   const isRideExist = await Ride.findById(rideId);
@@ -53,17 +100,184 @@ const cancelRide = async (
     isRideExist.rideStatus === RideStatus.ACCEPTED ||
     isRideExist.rideStatus === RideStatus.COMPLETED ||
     isRideExist.rideStatus === RideStatus.PICKED_UP ||
-    isRideExist.rideStatus === RideStatus.REJETED ||
+    isRideExist.rideStatus === RideStatus.REJECTED ||
     isRideExist.rideStatus === RideStatus.IN_TRANSIT
   ) {
-    throw new AppError(StatusCodes.BAD_REQUEST, `You cann't cancel your ride. Because your ride status is ${isRideExist.rideStatus}`);
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `You cann't cancel your ride. Because your ride status is ${isRideExist.rideStatus}`
+    );
   }
 
-  const cancelledRide = await Ride.findByIdAndUpdate(rideId, { rideStatus: cancelStatus }, { new: true, runValidators: true});
+  if (isRideExist.rideStatus === RideStatus.CANCELLED) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      "You already  cancelled this ride"
+    );
+  }
+
+  const todaysCancelledCount = await cancelledRideToday(userId);
+
+  if (todaysCancelledCount >= 3) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      "You cannot cancel this ride — your daily cancel limit (3) has been reached."
+    );
+  }
+
+  const cancelledRide = await Ride.findByIdAndUpdate(
+    rideId,
+    { rideStatus: cancelStatus, cancelledAt: Date.now() },
+    { new: true, runValidators: true }
+  );
 
   return cancelledRide;
 };
 
+const updateRideStatus = async (
+  userId: string,
+  rideId: string,
+  newStatus: RideStatus
+) => {
+  const session = await Ride.startSession();
+
+  try {
+    session.startTransaction();
+
+    const isUserExist = await User.findById(userId);
+
+    // check user is exist or not
+    if (!isUserExist) {
+      throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+    }
+
+    // check user are valid or not
+    if (isUserExist._id.toString() !== userId) {
+      throw new AppError(
+        StatusCodes.UNAUTHORIZED,
+        "You are not authorized for this action"
+      );
+    }
+
+    const isRideExist = await Ride.findById(rideId);
+
+    // checking ride exist or not
+    if (!isRideExist) {
+      throw new AppError(StatusCodes.NOT_FOUND, "Ride not found");
+    }
+
+    const isDriverExist = await Driver.findOne({ driver: userId });
+
+    if (
+      isDriverExist &&
+      (isDriverExist.driverStatus === DriverStatus.PENDING ||
+        isDriverExist.driverStatus === DriverStatus.REJECTED ||
+        isDriverExist.driverStatus === DriverStatus.SUSPEND)
+    ) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        `You cann't accept any ride request. Because your driving status is ${isDriverExist.driverStatus}`
+      );
+    }
+
+    if (isDriverExist && isDriverExist.availability === Availability.OFFLINE) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        `You cann't update ride status. Because your are offline`
+      );
+    }
+
+    // prevent ride cancell by driver
+    if (RideStatus.CANCELLED === newStatus) {
+      throw new AppError(StatusCodes.BAD_REQUEST, "You cann't cancel any ride");
+    }
+
+    // check if rider already cancelled
+    if (isRideExist.rideStatus === RideStatus.CANCELLED) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        `This ride has already been '${isRideExist.rideStatus}' by the rider.`
+      );
+    }
+
+    if (!rideStatusFlow[isRideExist.rideStatus].includes(newStatus)) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        `Invalid status transition from '${isRideExist.rideStatus}' to '${newStatus}'.`
+      );
+    }
+
+    // initialized updateRideDAta
+    let updateRideData;
+    const nowInDhaka = dayjs().tz("Asia/Dhaka").format();
+
+    // driver accepting ride
+    if (RideStatus.ACCEPTED === newStatus) {
+      updateRideData = {
+        driver: userId,
+        rideStatus: newStatus,
+        acceptedAt: nowInDhaka,
+      };
+    }
+
+    if (isRideExist.rideStatus === RideStatus.ACCEPTED) {
+      if (isRideExist.driver.toString() !== userId) {
+        throw new AppError(
+          StatusCodes.BAD_REQUEST,
+          `You are not assign to this ride`
+        );
+      }
+    }
+
+    //
+    switch (newStatus) {
+      case RideStatus.PICKED_UP:
+        updateRideData = {
+          rideStatus: newStatus,
+          pickedupAt: nowInDhaka,
+        };
+        break;
+      case RideStatus.IN_TRANSIT:
+        updateRideData = {
+          rideStatus: newStatus,
+          inTransitAt: nowInDhaka,
+        };
+        break;
+      case RideStatus.COMPLETED:
+        updateRideData = {
+          rideStatus: newStatus,
+          completedAt: nowInDhaka,
+        };
+        await Driver.findOneAndUpdate(
+          { driver: userId },
+          { earnings: isRideExist?.fare },
+          { session }
+        );
+        break;
+      default:
+        break;
+    }
+
+    const rideStatusUpdate = await Ride.findByIdAndUpdate(
+      rideId,
+      updateRideData,
+      { new: true, runValidators: true, session }
+    );
+
+    await session.commitTransaction();
+    await session.endSession();
+
+    return rideStatusUpdate;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
+};
+
 export const RideService = {
-  requestRide, cancelRide
+  requestRide,
+  viewRideHistroy,
+  updateRideStatus,
+  cancelRide,
 };

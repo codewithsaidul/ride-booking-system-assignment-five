@@ -11,12 +11,12 @@ export interface IRideLocation {
 
 export enum RideStatus {
     REQUESTED = "requested",
+    CANCELLED = "cancelled",
+    REJECTED = "rejected",
     ACCEPTED = "accepted",
-    REJETED = "rejected",
-    COMPLETED = "completed",
     PICKED_UP = "picked_up",
     IN_TRANSIT = "in_transit",
-    CANCELLED = "cancelled"
+    COMPLETED = "completed",
 }
 
 
@@ -29,6 +29,7 @@ export interface IRides {
     fare: number;
     rideStatus: RideStatus;
     requestedAt: Date;
+    cancelledAt: Date
     rejectedAt: Date;
     acceptedAt: Date;
     completedAt: Date;

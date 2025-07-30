@@ -22,6 +22,38 @@ const requestRide = catchAsync(
 );
 
 
+const viewRideHistroy = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const decodedToken = req.user as JwtPayload
+    const result = await RideService.viewRideHistroy(decodedToken.userId);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Ride Histroy has been retrive successfully",
+      data: result,
+    });
+  }
+);
+
+
+
+const updateRideStatus = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const { rideStatus } = req.body;
+    const { rideId } = req.params
+    const decodedToken = req.user as JwtPayload
+    const result = await RideService.updateRideStatus(decodedToken.userId, rideId, rideStatus);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Ride status has benn updated successfully",
+      data: result,
+    });
+  }
+);
+
 
 const cancelRide = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
@@ -31,7 +63,7 @@ const cancelRide = catchAsync(
     const result = await RideService.cancelRide(decodedToken.userId, rideId, rideStatus);
 
     sendResponse(res, {
-      statusCode: StatusCodes.CREATED,
+      statusCode: StatusCodes.OK,
       success: true,
       message: "Your ride has been cancelled successfully",
       data: result,
@@ -40,8 +72,6 @@ const cancelRide = catchAsync(
 );
 
 
-
-
 export const RideController = {
-    requestRide, cancelRide
+    requestRide, cancelRide, viewRideHistroy, updateRideStatus
 }

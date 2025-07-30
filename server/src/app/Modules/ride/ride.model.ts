@@ -54,6 +54,9 @@ const rideSchema = new Schema<IRides>(
     rejectedAt: {
       type: Date,
     },
+    cancelledAt: {
+      type: Date,
+    },
     acceptedAt: {
       type: Date,
     },
