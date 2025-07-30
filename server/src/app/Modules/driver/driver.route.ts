@@ -10,8 +10,8 @@ import { DriverController } from "./driver.controller";
 const router = Router();
 
 
-router.patch("/apply-driver", checkAuth(Role.RIDER), validateRequest(driverApplicationZodSchema), DriverController.applyForDriver);
-router.patch("/application-status/:userId", checkAuth(Role.ADMIN), validateRequest(updateDriverApplicationStatusSchema), DriverController.updateDriverApplicationStatus);
+router.post("/apply-driver", checkAuth(Role.RIDER), validateRequest(driverApplicationZodSchema), DriverController.applyForDriver);
+router.patch("/application-status/:applicationId", checkAuth(Role.ADMIN), validateRequest(updateDriverApplicationStatusSchema), DriverController.updateDriverApplicationStatus);
 
 
 

@@ -1,5 +1,5 @@
 import z from "zod";
-import { DriverStatus } from "../user/user.interface";
+import { DriverStatus } from "./driver.interface";
 
 export const driverApplicationZodSchema = z.object({
   licenseNumber: z
@@ -16,7 +16,6 @@ export const driverApplicationZodSchema = z.object({
       .max(15, "Plate number must be at most 15 characters"),
   }),
 });
-
 
 export const updateDriverApplicationStatusSchema = z.object({
   driverStatus: z.enum(Object.values(DriverStatus) as [string], {

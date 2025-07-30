@@ -27,14 +27,14 @@ const applyForDriver = catchAsync( async (req: TRequest, res: TResponse, next: T
 
 const updateDriverApplicationStatus = catchAsync( async (req: TRequest, res: TResponse, next: TNext) => {
     const { driverStatus } = req.body;
-    const { userId } = req.params
+    const { applicationId } = req.params
 
-    const updateDriver = await DriverService.updateDriverApplicationStatus(userId, driverStatus);
+    const updateDriver = await DriverService.updateDriverApplicationStatus(applicationId, driverStatus);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
-        message: "Driver application status updated successfully",
+        message: "Driver application has been approved. Please Login again to use all feature of driver role",
         data: updateDriver
     })
 });
