@@ -15,7 +15,8 @@ export enum RideStatus {
     REJETED = "rejected",
     COMPLETED = "completed",
     PICKED_UP = "picked_up",
-    IN_TRANSIT = "in_transit"
+    IN_TRANSIT = "in_transit",
+    CANCELLED = "cancelled"
 }
 
 

@@ -31,3 +31,11 @@ export const createRideZodSchema = z.object({
     invalid_type_error: "Invalid status value",
   }),
 });
+
+
+// export const cancelledRideZodSchema = z.object({
+//   rideStatus: z.enum(RideStatus.CANCELLED, {
+//     required_error: "Ride status is required",
+//     invalid_type_error: "Invalid status value",
+//   }),
+// });

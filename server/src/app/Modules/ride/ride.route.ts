@@ -9,6 +9,7 @@ import { RideController } from "./ride.controller";
 const router = Router();
 
 router.post("/request-ride", checkAuth(Role.RIDER), RideController.requestRide)
+router.patch("/cancel-ride/:rideId", checkAuth(Role.RIDER), RideController.cancelRide)
 
 
 
