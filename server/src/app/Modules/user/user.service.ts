@@ -22,7 +22,7 @@ const createUser = async (payload: Partial<IUser>) => {
     );
   }
 
-  //   password hashing
+  //  password hashing
   const hashPassword = await bcrypt.hash(
     password as string,
     Number(envVars.BCRYPT_SALT_ROUND)
@@ -36,7 +36,6 @@ const createUser = async (payload: Partial<IUser>) => {
 
   //   Create user with the provided details
   //   Note: The password is hashed before saving to the database
-  //   and the auth provider is set to "credentials" with the email as providerId
   const user = await User.create({
     email,
     password: hashPassword,
@@ -48,7 +47,6 @@ const createUser = async (payload: Partial<IUser>) => {
 };
 
 // Function to get all users with pagination, filtering, searching, and sorting
-// It uses the QueryBuilder utility to build the query based on the provided parameters
 const getAllUsers = async (query: Record<string, string>) => {
   //   Create a QueryBuilder instance with the User model and the query
   const queryBuilder = new QueryBuilder(User.find(), query);
@@ -61,8 +59,9 @@ const getAllUsers = async (query: Record<string, string>) => {
     .fields()
     .paginate();
 
-  //   Execute the query and get the data and metadata
-  //   The data will be an array of users, and the meta will contain pagination info
+
+    
+  //  Execute the query and get the data and metadata
   const [data, meta] = await Promise.all([
     users.build().select("-password -auths"),
     queryBuilder.getMeta(),
