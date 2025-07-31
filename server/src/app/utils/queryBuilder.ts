@@ -23,6 +23,10 @@ export class QueryBuilder<T> {
     return this;
   }
 
+
+
+
+
   search(searchableFields: string[]): this {
     const searchTerm = this.query.searchTerm || "";
     const searchQuery = {
