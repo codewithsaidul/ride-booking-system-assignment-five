@@ -55,13 +55,7 @@ const applyForDriver = async (
     );
   }
 
-  // checking user alreay are in driver role
-  if (isUserExist.role === Role.DRIVER) {
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      "You have already registred as drive"
-    );
-  }
+
 
   // create new driver application
   const driver = await DriverApplication.create({
@@ -220,44 +214,6 @@ const updateDriverApplicationStatus = async (
   }
 };
 
-const updateDriverAvailityStatus = async (
-  driverId: string,
-  decodedToken: JwtPayload,
-  availability: Availability
-) => {
-  const isDriverExist = await Driver.findById(driverId);
-
-  // checking is driver exist or not
-  if (!isDriverExist) {
-    throw new AppError(
-      StatusCodes.FORBIDDEN,
-      "You are not registered as a driver. Please apply to become a driver first."
-    );
-  }
-
-  // prevent unauthorized user
-  if (isDriverExist.driver.toString() !== decodedToken.userId) {
-    throw new AppError(
-      StatusCodes.UNAUTHORIZED,
-      "Youre not authorized to perform this action"
-    );
-  }
-
-  if (isDriverExist.availability === availability) {
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      `Your availability status is already set to '${isDriverExist.availability}'.`
-    );
-  }
-
-  const updateAvailability = await Driver.findByIdAndUpdate(
-    driverId,
-    { availability: availability },
-    { new: true, runValidators: true }
-  );
-
-  return updateAvailability;
-};
 
 export const DriverService = {
   applyForDriver,
