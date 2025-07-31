@@ -46,6 +46,29 @@ const requestRide = async (payload: Partial<IRides>, userId: string) => {
   return rideRequested;
 };
 
+
+const getAllRides = async (userId: string) => {
+  const isUserExist = await User.findById(userId);
+
+  // check user is exist or not
+  if (!isUserExist) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  // check user are valid or not
+  if (isUserExist._id.toString() !== userId) {
+    throw new AppError(
+      StatusCodes.UNAUTHORIZED,
+      "You are not authorized for this action"
+    );
+  }
+
+  const allRides = await Ride.find().populate("rider", "-password").populate("driver", "-password");
+
+
+  return allRides
+};
+
 const viewRideHistroy = async (userId: string) => {
   const isUserExist = await User.findById(userId);
 
@@ -149,7 +172,10 @@ const updateRideStatus = async (
       );
     }
 
-    if (RideStatus.REJECTED === newStatus || RideStatus.ACCEPTED === newStatus) {
+    if (
+      RideStatus.REJECTED === newStatus ||
+      RideStatus.ACCEPTED === newStatus
+    ) {
       const isDriverHaveActiveRide = await Ride.findOne({
         driver: userId,
         rideStatus: { $in: DriverActiveRide },
@@ -328,6 +354,7 @@ const cancelRide = async (
 
 export const RideService = {
   requestRide,
+  getAllRides,
   viewRideHistroy,
   viewEarningHistory,
   updateRideStatus,
