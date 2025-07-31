@@ -1,3 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { JwtPayload } from "jsonwebtoken";
+import { TNext, TRequest, TResponse } from "../../types/global";
+import { catchAsync } from "../../utils/catchAsync";
+import { DriverService } from "./driver.service";
+import { sendResponse } from "../../utils/sendResponse";
+import { StatusCodes } from "http-status-codes";
+
+
+
 
 
 const applyForDriver = catchAsync( async (req: TRequest, res: TResponse, next: TNext) => {
