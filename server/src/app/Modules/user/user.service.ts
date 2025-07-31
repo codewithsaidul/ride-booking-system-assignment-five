@@ -73,6 +73,9 @@ const getAllUsers = async (query: Record<string, string>) => {
   };
 };
 
+
+
+
 // Function to get a single user by ID
 //  only admin can access this endpoint
 const getSingleUser = async (userId: string) => {
@@ -169,6 +172,7 @@ const deleteUser = async (userId: string) => {
 // Exporting the UserService object with methods
 export const UserService = {
   createUser,
+  getMe,
   getAllUsers,
   updateUserInfo,
   getSingleUser,

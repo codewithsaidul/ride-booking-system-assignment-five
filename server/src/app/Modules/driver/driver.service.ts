@@ -2,11 +2,13 @@ import { StatusCodes } from "http-status-codes";
 import { JwtPayload } from "jsonwebtoken";
 import mongoose from "mongoose";
 import { AppError } from "../../errorHelpers/AppError";
+import { QueryBuilder } from "../../utils/queryBuilder";
 import { IUser, Role } from "../user/user.interface";
 import { User } from "../user/user.model";
+import { driverSearchFields } from "./driver.constant";
+import { Availability, DriverStatus } from "./driver.interface";
 import { Driver } from "./driver.model";
 import { DriverApplication } from "./driverApplication.model";
-import { DriverStatus } from "./driver.interface";
 
 const applyForDriver = async (
   payload: Partial<IUser>,
@@ -19,13 +21,22 @@ const applyForDriver = async (
     );
   }
 
-
   const isUserExist = await User.findById(decodedToken.userId);
 
+  // checking is user exist or not
   if (!isUserExist) {
     throw new AppError(StatusCodes.NOT_FOUND, "User not found");
   }
 
+  // checking authorized user or not
+  if (isUserExist._id.toString() !== decodedToken.userId) {
+    throw new AppError(
+      StatusCodes.UNAUTHORIZED,
+      "Youre not authorized to perform this action"
+    );
+  }
+
+  // checking address provided or not
   if (!isUserExist.address) {
     throw new AppError(
       StatusCodes.BAD_REQUEST,
@@ -33,13 +44,101 @@ const applyForDriver = async (
     );
   }
 
-  if (isUserExist.role === Role.DRIVER) {
-    throw new AppError(StatusCodes.BAD_REQUEST, "You have already registred as driver");
+  // checking user already submit a driver application
+  const isApplicationExist = await DriverApplication.findOne({
+    driver: decodedToken.userId,
+  });
+  if (!isApplicationExist) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      "You have already submitted a driver application"
+    );
   }
 
-  const driver = await DriverApplication.create({...payload, driver: decodedToken.userId});
+
+
+  // create new driver application
+  const driver = await DriverApplication.create({
+    ...payload,
+    driver: decodedToken.userId,
+  });
 
   return driver;
+};
+
+const getAllDriverApplication = async (
+  userId: string,
+  query: Record<string, string>
+) => {
+  const isUserExist = await User.findById(userId);
+
+  // checking is user exist or not
+  if (!isUserExist) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  // checking authorized user or not
+  if (isUserExist._id.toString() !== userId) {
+    throw new AppError(
+      StatusCodes.UNAUTHORIZED,
+      "Youre not authorized to perform this action"
+    );
+  }
+
+  const queryBuilder = new QueryBuilder(DriverApplication.find(), query);
+
+  const driverApplication = queryBuilder
+    .search(driverSearchFields)
+    .filter()
+    .sort()
+    .fields()
+    .paginate();
+
+  const [data, meta] = await Promise.all([
+    driverApplication.build(),
+    queryBuilder.getMeta(),
+  ]);
+
+  return {
+    data,
+    meta,
+  };
+};
+
+const getAllDriver = async (userId: string, query: Record<string, string>) => {
+  const isUserExist = await User.findById(userId);
+
+  // checking is user exist or not
+  if (!isUserExist) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  // checking authorized user or not
+  if (isUserExist._id.toString() !== userId) {
+    throw new AppError(
+      StatusCodes.UNAUTHORIZED,
+      "Youre not authorized to perform this action"
+    );
+  }
+
+  const queryBuilder = new QueryBuilder(Driver.find(), query);
+
+  const driverApplication = queryBuilder
+    .search(driverSearchFields)
+    .filter()
+    .sort()
+    .fields()
+    .paginate();
+
+  const [data, meta] = await Promise.all([
+    driverApplication.build(),
+    queryBuilder.getMeta(),
+  ]);
+
+  return {
+    data,
+    meta,
+  };
 };
 
 // update driver application status by admin
@@ -116,8 +215,10 @@ const updateDriverApplicationStatus = async (
 };
 
 
-
 export const DriverService = {
   applyForDriver,
+  getAllDriverApplication,
+  getAllDriver,
   updateDriverApplicationStatus,
+  updateDriverAvailityStatus,
 };
