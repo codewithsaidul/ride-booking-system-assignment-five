@@ -22,6 +22,10 @@ const modulesRoute = [
     path: "/rides",
     route: RideRoutes,
   },
+  {
+    path: "/analytics",
+    route: AnalyticsRoutes,
+  },
 ];
 
 modulesRoute.forEach((route) => {
