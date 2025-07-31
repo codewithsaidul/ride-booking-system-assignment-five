@@ -11,3 +11,12 @@ export const rideStatusFlow: Record<RideStatus, RideStatus[]> = {
   [RideStatus.CANCELLED]: [],
   [RideStatus.REJECTED]: [],
 };
+
+
+
+
+export const DriverActiveRide = [
+  RideStatus.ACCEPTED,
+  RideStatus.PICKED_UP,
+  RideStatus.IN_TRANSIT,
+]

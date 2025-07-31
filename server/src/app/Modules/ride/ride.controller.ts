@@ -38,6 +38,22 @@ const viewRideHistroy = catchAsync(
 
 
 
+const viewEarningHistory = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const decodedToken = req.user as JwtPayload
+    const result = await RideService.viewEarningHistory(decodedToken.userId);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Driver Earning Histroy has been retrive successfully",
+      data: result,
+    });
+  }
+);
+
+
+
 const updateRideStatus = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
     const { rideStatus } = req.body;
@@ -48,7 +64,7 @@ const updateRideStatus = catchAsync(
     sendResponse(res, {
       statusCode: StatusCodes.OK,
       success: true,
-      message: "Ride status has benn updated successfully",
+      message: `Ride status has been updated to '${result?.rideStatus}' successfully`,
       data: result,
     });
   }
@@ -73,5 +89,5 @@ const cancelRide = catchAsync(
 
 
 export const RideController = {
-    requestRide, cancelRide, viewRideHistroy, updateRideStatus
+    requestRide, viewRideHistroy, viewEarningHistory, updateRideStatus, cancelRide
 }

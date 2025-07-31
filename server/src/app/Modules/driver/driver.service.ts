@@ -34,7 +34,7 @@ const applyForDriver = async (
   }
 
   if (isUserExist.role === Role.DRIVER) {
-    throw new AppError(StatusCodes.BAD_REQUEST, "You have already registred as drive");
+    throw new AppError(StatusCodes.BAD_REQUEST, "You have already registred as driver");
   }
 
   const driver = await DriverApplication.create({...payload, driver: decodedToken.userId});
@@ -114,6 +114,8 @@ const updateDriverApplicationStatus = async (
     throw error;
   }
 };
+
+
 
 export const DriverService = {
   applyForDriver,
