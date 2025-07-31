@@ -43,6 +43,7 @@ const getAllUsers = catchAsync(
   }
 );
 
+
 // Function to get a single user by ID
 // only admin can access this endpoint
 const getSingleUser = catchAsync(
