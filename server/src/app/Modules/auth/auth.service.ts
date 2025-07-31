@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import { StatusCodes } from "http-status-codes";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
 import { AppError } from "../../errorHelpers/AppError";
 import {
@@ -9,6 +8,7 @@ import {
 } from "../../utils/userToken";
 import { IsActive, IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
+import jwt, { JwtPayload } from "jsonwebtoken"
 
 // This function handles user login using credentials (email and password).
 const credentialsLogin = async (payload: Partial<IUser>) => {
@@ -187,8 +187,6 @@ const forgotPassword = async (email: string) => {
 
   return resetUILink;
 };
-
-
 
 // This function handles resetting the user's password.
 const resetPassword = async (
