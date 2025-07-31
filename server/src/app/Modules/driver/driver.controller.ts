@@ -9,6 +9,7 @@ import { StatusCodes } from "http-status-codes";
 
 
 
+
 const applyForDriver = catchAsync( async (req: TRequest, res: TResponse, next: TNext) => {
     const decodedToken =  req.user as JwtPayload;
 

@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import { StatusCodes } from "http-status-codes";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
 import { AppError } from "../../errorHelpers/AppError";
 import {
@@ -10,6 +9,10 @@ import {
 import { IsActive, IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
 import { sendEmail } from "../../utils/sendEmail";
+import { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken"
+
+
 
 // This function handles user login using credentials (email and password).
 const credentialsLogin = async (payload: Partial<IUser>) => {
@@ -139,6 +142,7 @@ const setPassword = async (userId: string, planPassword: string) => {
   return true;
 };
 
+
 // This function handles the forgot password process.
 const forgotPassword = async (email: string) => {
   const isUserExist = await User.findOne({ email });
@@ -235,7 +239,10 @@ const resetPassword = async (
   return true;
 };
 
-// Exporting the AuthService
+
+
+
+// Exporting the AuthServic
 export const AuthService = {
   credentialsLogin,
   getNewAccessToken,
