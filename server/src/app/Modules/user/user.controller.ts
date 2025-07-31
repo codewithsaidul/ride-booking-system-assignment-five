@@ -4,6 +4,7 @@ import { TNext, TRequest, TResponse } from "../../types/global";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { UserService } from "./user.service";
+import { JwtPayload } from "jsonwebtoken";
 
 // Function to create a new user
 // It uses the UserService to create a user with the provided payload
@@ -45,6 +46,25 @@ const getAllUsers = catchAsync(
     });
   }
 );
+
+
+const getMe = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    // logic for getting a single user goes here
+   const decodedToken = req.user as JwtPayload
+
+    const user = await UserService.getSingleUser(decodedToken.userId);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "User profile retrieved successfully",
+      data: user,
+    });
+  }
+);
+
+
 
 // Function to get a single user by ID
 // only admin can access this endpoint
@@ -108,6 +128,7 @@ const deleteUser = catchAsync(
 // This allows the UserController to be used in the user.route.ts file
 export const UserController = {
   createUser,
+  getMe,
   getAllUsers,
   getSingleUser,
   updateUserInfo,
