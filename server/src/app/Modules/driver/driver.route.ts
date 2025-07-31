@@ -11,7 +11,7 @@ const router = Router();
 
 
 router.post("/apply", checkAuth(Role.RIDER), validateRequest(driverApplicationZodSchema), DriverController.applyForDriver);
-router.patch("/application/:applicationId/status", checkAuth(Role.ADMIN), validateRequest(updateDriverApplicationStatusSchema), DriverController.updateDriverApplicationStatus);
+router.patch("/driver-application/:applicationId/status", checkAuth(Role.ADMIN), validateRequest(updateDriverApplicationStatusSchema), DriverController.updateDriverApplicationStatus);
 
 
 
