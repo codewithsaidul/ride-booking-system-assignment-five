@@ -7,7 +7,8 @@ import { router } from "./app/routes/index.route";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { envVars } from "./app/config/env";
 import { notFound } from "./app/middleware/notFount";
-
+import "./app/config/passport";
+import passport from "passport";
 
 
 
@@ -20,8 +21,10 @@ app.use(expressSession({
   secret: envVars.EXPRESS_SESSION_SECRET,
   resave: false,
   saveUninitialized: false
-}))
-app.use(cookieParser())
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(cookieParser());
 app.use(express.json());
 app.use(cors());
 
