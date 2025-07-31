@@ -73,22 +73,6 @@ const getAllUsers = async (query: Record<string, string>) => {
 
 
 
-const getMe= async (userId: string) => {
-  const user = await User.findById(userId).select("-password");
-  if (!user) {
-    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
-  }
-
-
-  if (user._id.toString() !== userId) {
-    throw new AppError(StatusCodes.UNAUTHORIZED, "You are not authorized for perform this action")
-  }
-
-
-
-  return user;
-};
-
 // Function to get a single user by ID
 //  only admin can access this endpoint
 // It retrieves the user from the database and excludes the password field
@@ -153,7 +137,6 @@ const deleteUser = async (userId: string) => {
 // The methods include createUser, getAllUsers, updateUserInfo, and getSingleUser
 export const UserService = {
   createUser,
-  getMe,
   getAllUsers,
   updateUserInfo,
   getSingleUser,
