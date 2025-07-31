@@ -12,6 +12,7 @@ export const setAuthCookie = (res: TResponse, tokenInfo: AuthToken) => {
     res.cookie("accessToken", tokenInfo.accessToken, {
       httpOnly: true, // Safer from XSS
       secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
+      sameSite: "none"
     });
   }
 
@@ -20,6 +21,7 @@ export const setAuthCookie = (res: TResponse, tokenInfo: AuthToken) => {
     res.cookie("refreshToken", tokenInfo.refreshToken, {
       httpOnly: true,  // Safer from XSS
       secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
+      sameSite: "none"
     });
   }
 };
