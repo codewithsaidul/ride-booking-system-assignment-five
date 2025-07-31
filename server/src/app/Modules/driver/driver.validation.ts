@@ -1,5 +1,5 @@
 import z from "zod";
-import { DriverStatus } from "./driver.interface";
+import { Availability, DriverStatus } from "./driver.interface";
 
 export const driverApplicationZodSchema = z.object({
   licenseNumber: z
@@ -21,5 +21,13 @@ export const updateDriverApplicationStatusSchema = z.object({
   driverStatus: z.enum(Object.values(DriverStatus) as [string], {
     required_error: "Application status is required",
     invalid_type_error: "Invalid status value",
+  }),
+});
+
+
+export const updateDriveAvailityStatusZodSchema = z.object({
+  availability: z.enum(Object.values(Availability) as [string], {
+    required_error: "Availability status is required",
+    invalid_type_error: "Invalid Availability status value",
   }),
 });
