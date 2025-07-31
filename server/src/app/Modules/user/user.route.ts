@@ -8,9 +8,11 @@ import { createUserZodSchema, updateUserZodSchema } from "./user.validation";
 const router = Router();
 
 
+// checkAuth middlerware added on auth branch
+
 router.post("/register", validateRequest(createUserZodSchema), UserController.createUser);
 router.get("/all-users", UserController.getAllUsers);
-router.get("/me", UserController.getMe);
+router.get("/me", checkAuth(...Object.values(Role)), UserController.getMe);
 router.get("/:userId", UserController.getSingleUser);
 router.patch("/:userId", validateRequest(updateUserZodSchema), UserController.updateUserInfo);
 router.delete("/:userId", UserController.deleteUser);
