@@ -6,9 +6,8 @@ import {
   createAccessTokenWithRefreshToken,
   createUserToken,
 } from "../../utils/userToken";
-import { IsActive, IUser } from "../user/user.interface";
+import { IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
-import jwt, { JwtPayload } from "jsonwebtoken"
 
 // This function handles user login using credentials (email and password).
 const credentialsLogin = async (payload: Partial<IUser>) => {
@@ -139,90 +138,101 @@ const setPassword = async (userId: string, planPassword: string) => {
 };
 
 
+// TODO: Forgot Password & Reset Password features are temporarily disabled.
+// Reason: Nodemailer is not supported on Vercel due to restricted SMTP socket connections.
+// Once deployed to a custom server or platforms like Railway/Render, this feature can be enabled.
 
 // This function handles the forgot password process.
-const forgotPassword = async (email: string) => {
-  const isUserExist = await User.findOne({ email });
+// const forgotPassword = async (email: string) => {
+//   const isUserExist = await User.findOne({ email });
 
-  if (!isUserExist) {
-    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
-  }
+//   if (!isUserExist) {
+//     throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+//   }
 
-  if (!isUserExist.isVerified) {
-    throw new AppError(
-      StatusCodes.BAD_REQUEST,
-      "Your account is not verified. Please verify your account first."
-    );
-  }
+//   if (!isUserExist.isVerified) {
+//     throw new AppError(
+//       StatusCodes.BAD_REQUEST,
+//       "Your account is not verified. Please verify your account first."
+//     );
+//   }
 
-  // check if user is InActive or Blocked
-  if (
-    isUserExist.isActive === IsActive.INACTIVE ||
-    isUserExist.isActive === IsActive.BLOCKED
-  ) {
-    throw new AppError(
-      StatusCodes.FORBIDDEN,
-      `User is ${isUserExist.isActive}, please contact our support team.`
-    );
-  }
+//   // check if user is InActive or Blocked
+//   if (
+//     isUserExist.isActive === IsActive.INACTIVE ||
+//     isUserExist.isActive === IsActive.BLOCKED
+//   ) {
+//     throw new AppError(
+//       StatusCodes.FORBIDDEN,
+//       `User is ${isUserExist.isActive}, please contact our support team.`
+//     );
+//   }
 
-  // check if user  Deleted
-  if (isUserExist.isDeleted) {
-    throw new AppError(StatusCodes.FORBIDDEN, "User is deleted.");
-  }
+//   // check if user  Deleted
+//   if (isUserExist.isDeleted) {
+//     throw new AppError(StatusCodes.FORBIDDEN, "User is deleted.");
+//   }
 
-  const jwtPayload = {
-    userId: isUserExist._id,
-    email: isUserExist.email,
-    role: isUserExist.role,
-  };
+//   const jwtPayload = {
+//     userId: isUserExist._id,
+//     email: isUserExist.email,
+//     role: isUserExist.role,
+//   };
 
-  const resetToken = jwt.sign(jwtPayload, envVars.JWT.JWT_ACCESS_SECRET, {
-    expiresIn: "10m",
-  });
+//   const resetToken = jwt.sign(jwtPayload, envVars.JWT.JWT_ACCESS_SECRET, {
+//     expiresIn: "10m",
+//   });
 
-  const resetUILink = `${envVars.FRONTEND_URL}/reset-password?id=${isUserExist._id}&token=${resetToken}`;
+//   const resetUILink = `${envVars.FRONTEND_URL}/reset-password?id=${isUserExist._id}&token=${resetToken}`;
 
-  // TODO: Send the reset link to the user's email
+//   // TODO: Send the reset link to the user's email
 
-  return resetUILink;
-};
+//   return resetUILink;
+// };
 
 // This function handles resetting the user's password.
-const resetPassword = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload: Record<string, any>,
-  decodedToken: JwtPayload
-) => {
-  if (payload.id !== decodedToken.userId) {
-    throw new AppError(
-      StatusCodes.UNAUTHORIZED,
-      "You are not authorized to reset this password"
-    );
-  }
+// const resetPassword = async (
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   payload: Record<string, any>,
+//   decodedToken: JwtPayload
+// ) => {
+//   if (payload.id !== decodedToken.userId) {
+//     throw new AppError(
+//       StatusCodes.UNAUTHORIZED,
+//       "You are not authorized to reset this password"
+//     );
+//   }
 
-  const isUserExist = await User.findById(decodedToken.userId);
+//   const isUserExist = await User.findById(decodedToken.userId);
 
-  if (!isUserExist) {
-    throw new AppError(StatusCodes.NOT_FOUND, "User not found");
-  }
+//   if (!isUserExist) {
+//     throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+//   }
 
-  isUserExist.password = await bcrypt.hash(
-    payload.password,
-    Number(envVars.BCRYPT_SALT_ROUND)
-  );
+//   isUserExist.password = await bcrypt.hash(
+//     payload.password,
+//     Number(envVars.BCRYPT_SALT_ROUND)
+//   );
 
-  await isUserExist.save();
+//   await isUserExist.save();
 
-  return true;
-};
+//   return true;
+// };
 
 // Exporting the AuthService
+
+
+
+
+
+
+
+
 export const AuthService = {
   credentialsLogin,
   getNewAccessToken,
   changePassword,
   setPassword,
-  forgotPassword,
-  resetPassword,
+  // forgotPassword,
+  // resetPassword,
 };

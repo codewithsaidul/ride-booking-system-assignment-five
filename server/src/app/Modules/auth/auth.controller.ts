@@ -150,36 +150,36 @@ const setPassword = catchAsync(
 );
 
 // This function handles the forgot password process.
-const forgotPassword = catchAsync(
-  async (req: TRequest, res: TResponse, next: TNext) => {
-    const { email } = req.body;
+// const forgotPassword = catchAsync(
+//   async (req: TRequest, res: TResponse, next: TNext) => {
+//     const { email } = req.body;
 
-    const resetLink = await AuthService.forgotPassword(email);
+//     const resetLink = await AuthService.forgotPassword(email);
 
-    sendResponse(res, {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: "Password reset link sent successfully",
-      data: resetLink,
-    });
-  }
-);
+//     sendResponse(res, {
+//       statusCode: StatusCodes.OK,
+//       success: true,
+//       message: "Password reset link sent successfully",
+//       data: resetLink,
+//     });
+//   }
+// );
 
-// This function handles resetting the user's password.
-const resetPassword = catchAsync(
-  async (req: TRequest, res: TResponse, next: TNext) => {
-    const decodedToken = req.user as JwtPayload;
+// // This function handles resetting the user's password.
+// const resetPassword = catchAsync(
+//   async (req: TRequest, res: TResponse, next: TNext) => {
+//     const decodedToken = req.user as JwtPayload;
 
-    await AuthService.resetPassword(req.body, decodedToken);
+//     await AuthService.resetPassword(req.body, decodedToken);
 
-    sendResponse(res, {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: "Password reset successfully",
-      data: null,
-    });
-  }
-);
+//     sendResponse(res, {
+//       statusCode: StatusCodes.OK,
+//       success: true,
+//       message: "Password reset successfully",
+//       data: null,
+//     });
+//   }
+// );
 
 // This function handles the Google OAuth callback.
 const googleCallbackURL = catchAsync(
@@ -210,7 +210,7 @@ export const AuthController = {
   logout,
   changePassword,
   setPassword,
-  forgotPassword,
-  resetPassword,
+  // forgotPassword,
+  // resetPassword,
   googleCallbackURL,
 };
