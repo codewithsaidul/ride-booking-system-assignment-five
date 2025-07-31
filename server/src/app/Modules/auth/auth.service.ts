@@ -9,6 +9,7 @@ import {
 } from "../../utils/userToken";
 import { IsActive, IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
+import { sendEmail } from "../../utils/sendEmail";
 
 // This function handles user login using credentials (email and password).
 const credentialsLogin = async (payload: Partial<IUser>) => {
@@ -138,8 +139,6 @@ const setPassword = async (userId: string, planPassword: string) => {
   return true;
 };
 
-
-
 // This function handles the forgot password process.
 const forgotPassword = async (email: string) => {
   const isUserExist = await User.findOne({ email });
@@ -183,12 +182,21 @@ const forgotPassword = async (email: string) => {
 
   const resetUILink = `${envVars.FRONTEND_URL}/reset-password?id=${isUserExist._id}&token=${resetToken}`;
 
+  isUserExist.isPasswordResetTokenUsed = false;
+
   // TODO: Send the reset link to the user's email
+  sendEmail({
+    to: isUserExist.email,
+    subject: "Passwort Reset",
+    templateName: "forgotPassword",
+    templateData: {
+      name: isUserExist.name,
+      resetUILink,
+    },
+  });
 
-  return resetUILink;
+  await isUserExist.save();
 };
-
-
 
 // This function handles resetting the user's password.
 const resetPassword = async (
@@ -209,10 +217,18 @@ const resetPassword = async (
     throw new AppError(StatusCodes.NOT_FOUND, "User not found");
   }
 
+
+  // checking resetToken alreayd used
+  if (isUserExist.isPasswordResetTokenUsed) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "This token already has been used");
+  }
+
   isUserExist.password = await bcrypt.hash(
     payload.password,
     Number(envVars.BCRYPT_SALT_ROUND)
   );
+
+  isUserExist.isPasswordResetTokenUsed = true;
 
   await isUserExist.save();
 

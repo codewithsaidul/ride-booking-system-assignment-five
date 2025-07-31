@@ -28,6 +28,5 @@ export interface IUser {
   isVerified?: boolean;
   isDeleted?: boolean;
   auths?: IAUTHPROVIDER[];
-
-
+  isPasswordResetTokenUsed?: boolean;
 }
