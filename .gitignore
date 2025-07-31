@@ -1,11 +1,19 @@
 # Ignore root-level node_modules and .env
 node_modules/
 .env
+render.yaml
+dist
+
 
 # Ignore node_modules and .env inside server and client
 server/node_modules/
 server/.env
+server/render.yaml
+server/dist
+
+
 client/node_modules/
 client/.env
+client/render.yaml
+client/dist
 
-server/dist
