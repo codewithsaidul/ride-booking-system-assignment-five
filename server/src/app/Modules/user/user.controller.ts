@@ -61,6 +61,25 @@ const getSingleUser = catchAsync(
   }
 );
 
+
+
+
+const getMe = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    // logic for getting a single user goes here
+   const decodedToken = req.user as JwtPayload
+
+    const user = await UserService.getSingleUser(decodedToken.userId);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "User Profile retrieved successfully",
+      data: user,
+    });
+  }
+);
+
 // Function to update user information
 // It uses the UserService to update the user with the provided userId and payload
 const updateUserInfo = catchAsync(
@@ -108,6 +127,7 @@ const deleteUser = catchAsync(
 // Exporting the UserController object with methods
 export const UserController = {
   createUser,
+  getMe,
   getAllUsers,
   getSingleUser,
   updateUserInfo,

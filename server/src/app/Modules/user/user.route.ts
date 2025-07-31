@@ -12,6 +12,7 @@ const router = Router();
 
 router.post("/register", validateRequest(createUserZodSchema), UserController.createUser);
 router.get("/all-users", checkAuth(Role.ADMIN), UserController.getAllUsers);
+router.get("/me", checkAuth(...Object.values(Role)), UserController.getMe);
 router.get("/:userId", checkAuth(Role.ADMIN), UserController.getSingleUser);
 router.patch("/:userId", checkAuth(...Object.values(Role)), validateRequest(updateUserZodSchema), UserController.updateUserInfo);
 router.delete("/:userId", checkAuth(Role.ADMIN), UserController.deleteUser);
