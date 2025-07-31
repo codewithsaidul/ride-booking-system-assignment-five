@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import { StatusCodes } from "http-status-codes";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
 import { AppError } from "../../errorHelpers/AppError";
 import {
@@ -9,6 +8,11 @@ import {
 } from "../../utils/userToken";
 import { IsActive, IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
+import { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken"
+
+
+
 
 // This function handles user login using credentials (email and password).
 const credentialsLogin = async (payload: Partial<IUser>) => {
@@ -139,6 +143,9 @@ const setPassword = async (userId: string, planPassword: string) => {
 };
 
 
+// TODO: Forgot Password & Reset Password features are temporarily disabled.
+// Reason: Nodemailer is not supported on Vercel due to restricted SMTP socket connections.
+// Once deployed to a custom server or platforms like Railway/Render, this feature can be enabled.
 
 // This function handles the forgot password process.
 const forgotPassword = async (email: string) => {
@@ -188,8 +195,6 @@ const forgotPassword = async (email: string) => {
   return resetUILink;
 };
 
-
-
 // This function handles resetting the user's password.
 const resetPassword = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -219,7 +224,10 @@ const resetPassword = async (
   return true;
 };
 
-// Exporting the AuthService
+
+
+
+// Exporting the AuthServic
 export const AuthService = {
   credentialsLogin,
   getNewAccessToken,
