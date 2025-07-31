@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { envVars } from "../config/env";
 import { IAUTHPROVIDER, IUser, Role } from "../Modules/user/user.interface";
 import { User } from "../Modules/user/user.model";

@@ -188,7 +188,6 @@ const forgotPassword = async (email: string) => {
 
   isUserExist.isPasswordResetTokenUsed = false;
 
-  // TODO: Send the reset link to the user's email
   sendEmail({
     to: isUserExist.email,
     subject: "Passwort Reset",

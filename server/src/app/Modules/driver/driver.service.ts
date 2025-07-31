@@ -124,7 +124,7 @@ const getAllDriver = async (userId: string, query: Record<string, string>) => {
   if (isUserExist._id.toString() !== userId) {
     throw new AppError(
       StatusCodes.UNAUTHORIZED,
-      "Youre not authorized to perform this action"
+      "You're not authorized to perform this action"
     );
   }
 

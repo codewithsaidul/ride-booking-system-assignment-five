@@ -29,7 +29,7 @@ router.get(
   DriverController.getAllDriver
 );
 router.patch(
-  "/application-status/:applicationId",
+  "/driver-application/:applicationId/status",
   checkAuth(Role.ADMIN),
   validateRequest(updateDriverApplicationStatusSchema),
   DriverController.updateDriverApplicationStatus

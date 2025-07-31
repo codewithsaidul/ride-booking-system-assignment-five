@@ -4,6 +4,7 @@ import { DriverRoutes } from "../Modules/driver/driver.route";
 import { RideRoutes } from "../Modules/ride/ride.route";
 import { AnalyticsRoutes } from "../Modules/analytics/analytics.route";
 import { OtpRoutes } from "../Modules/otp/otp.route";
+import { UserRoutes } from "../Modules/user/user.route";
 
 export const router = Router();
 
