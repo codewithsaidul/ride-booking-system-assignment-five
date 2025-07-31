@@ -28,7 +28,7 @@ const credentialsLogin = catchAsync(
         }
 
         if (!user) {
-          return next(new AppError(StatusCodes.NOT_FOUND, info.message));
+          return next(new AppError(StatusCodes.BAD_REQUEST, info.message));
         }
 
         const { accessToken, refreshToken } = createUserToken(user);

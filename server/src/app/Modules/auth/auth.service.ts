@@ -8,9 +8,9 @@ import {
 } from "../../utils/userToken";
 import { IsActive, IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
+import { sendEmail } from "../../utils/sendEmail";
 import { JwtPayload } from "jsonwebtoken";
 import jwt from "jsonwebtoken"
-
 
 
 
@@ -143,10 +143,6 @@ const setPassword = async (userId: string, planPassword: string) => {
 };
 
 
-// TODO: Forgot Password & Reset Password features are temporarily disabled.
-// Reason: Nodemailer is not supported on Vercel due to restricted SMTP socket connections.
-// Once deployed to a custom server or platforms like Railway/Render, this feature can be enabled.
-
 // This function handles the forgot password process.
 const forgotPassword = async (email: string) => {
   const isUserExist = await User.findOne({ email });
@@ -190,9 +186,20 @@ const forgotPassword = async (email: string) => {
 
   const resetUILink = `${envVars.FRONTEND_URL}/reset-password?id=${isUserExist._id}&token=${resetToken}`;
 
-  // TODO: Send the reset link to the user's email
+  isUserExist.isPasswordResetTokenUsed = false;
 
-  return resetUILink;
+  // TODO: Send the reset link to the user's email
+  sendEmail({
+    to: isUserExist.email,
+    subject: "Passwort Reset",
+    templateName: "forgotPassword",
+    templateData: {
+      name: isUserExist.name,
+      resetUILink,
+    },
+  });
+
+  await isUserExist.save();
 };
 
 // This function handles resetting the user's password.
@@ -214,10 +221,18 @@ const resetPassword = async (
     throw new AppError(StatusCodes.NOT_FOUND, "User not found");
   }
 
+
+  // checking resetToken alreayd used
+  if (isUserExist.isPasswordResetTokenUsed) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "This token already has been used");
+  }
+
   isUserExist.password = await bcrypt.hash(
     payload.password,
     Number(envVars.BCRYPT_SALT_ROUND)
   );
+
+  isUserExist.isPasswordResetTokenUsed = true;
 
   await isUserExist.save();
 
