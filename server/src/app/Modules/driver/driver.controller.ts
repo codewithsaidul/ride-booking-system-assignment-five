@@ -24,6 +24,39 @@ const applyForDriver = catchAsync( async (req: TRequest, res: TResponse, next: T
 
 
 
+const getAllDriverApplication = catchAsync( async (req: TRequest, res: TResponse, next: TNext) => {
+    const decodedToken =  req.user as JwtPayload;
+    const query = req.query as Record<string, string>
+
+
+    const result = await DriverService.getAllDriverApplication(decodedToken.userId, query);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "All Driver Application has been retrive successfully",
+        data: result.data,
+        meta: result.meta
+    })
+})
+
+
+const getAllDriver = catchAsync( async (req: TRequest, res: TResponse, next: TNext) => {
+    const decodedToken =  req.user as JwtPayload;
+    const query = req.query as Record<string, string>
+
+
+    const result = await DriverService.getAllDriver(decodedToken.userId, query);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "All Driver has been retrive successfully",
+        data: result.data,
+        meta: result.meta
+    })
+})
+
 
 const updateDriverApplicationStatus = catchAsync( async (req: TRequest, res: TResponse, next: TNext) => {
     const { driverStatus } = req.body;
@@ -41,7 +74,24 @@ const updateDriverApplicationStatus = catchAsync( async (req: TRequest, res: TRe
 
 
 
+const updateDriverAvailityStatus = catchAsync( async (req: TRequest, res: TResponse, next: TNext) => {
+    const { availability } = req.body;
+    const { driverId } = req.params;
+    const decodedToken = req.user as JwtPayload;
+
+    const updateDriver = await DriverService.updateDriverAvailityStatus(driverId, decodedToken, availability);
+
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Driver Availability status has been updated successfully",
+        data: updateDriver
+    })
+});
+
+
+
 
 export const DriverController = {
-    applyForDriver, updateDriverApplicationStatus
+    applyForDriver, getAllDriverApplication, getAllDriver, updateDriverApplicationStatus, updateDriverAvailityStatus
 }

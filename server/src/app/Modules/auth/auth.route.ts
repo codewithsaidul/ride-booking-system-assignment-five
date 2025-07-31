@@ -15,8 +15,8 @@ router.post("/refresh-token", AuthController.getNewAccessToken);
 router.post("/logout", AuthController.logout);
 router.post("/change-password", checkAuth(...Object.values(Role)), validateRequest(changePasswordZodSchema), AuthController.changePassword);
 router.post("/set-password", checkAuth(...Object.values(Role)), validateRequest(setPasswordZodSchema), AuthController.setPassword);
-router.post("/reset-password", checkAuth(...Object.values(Role)),  AuthController.resetPassword);
-router.post("/forgot-password", AuthController.forgotPassword);
+// router.post("/reset-password", checkAuth(...Object.values(Role)),  AuthController.resetPassword);
+// router.post("/forgot-password", AuthController.forgotPassword);
 
 
 router.get("/google", async (req: TRequest, res: TResponse, next: TNext) => {
