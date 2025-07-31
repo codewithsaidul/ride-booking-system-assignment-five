@@ -1,7 +1,6 @@
 import { Query } from "mongoose";
 import { excludedFields } from "../constants/global.constants";
 
-
 export class QueryBuilder<T> {
   public modelQuery: Query<T[], T>;
   public readonly query: Record<string, string>;
@@ -58,6 +57,11 @@ export class QueryBuilder<T> {
 
     this.modelQuery = this.modelQuery.skip(skip).limit(limit);
 
+    return this;
+  }
+
+  populate(path: string, select?: string): this {
+    this.modelQuery = this.modelQuery.populate(path, select);
     return this;
   }
 

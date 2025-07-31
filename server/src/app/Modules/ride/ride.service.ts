@@ -10,6 +10,8 @@ import { User } from "../user/user.model";
 import { IRides, RideStatus } from "./ride.interface";
 import { Ride } from "./ride.model";
 import { DriverActiveRide, rideStatusFlow } from "./ride.status";
+import { QueryBuilder } from "../../utils/queryBuilder";
+import { rideSearchableFields } from "./ride.constant";
 
 const requestRide = async (payload: Partial<IRides>, userId: string) => {
   const isUserExist = await User.findById(userId);
@@ -47,7 +49,7 @@ const requestRide = async (payload: Partial<IRides>, userId: string) => {
 };
 
 
-const getAllRides = async (userId: string) => {
+const getAllRides = async (userId: string, query: Record<string, string>) => {
   const isUserExist = await User.findById(userId);
 
   // check user is exist or not
@@ -63,10 +65,34 @@ const getAllRides = async (userId: string) => {
     );
   }
 
-  const allRides = await Ride.find().populate("rider", "-password").populate("driver", "-password");
+    //   Create a QueryBuilder instance with the User model and the query
+    const queryBuilder = new QueryBuilder(Ride.find(), query);
+  
+    //   Apply filters, search, sort, fields, and pagination using the QueryBuilder methods
+    const users = queryBuilder
+      .search(rideSearchableFields)
+      .filter()
+      .sort()
+      .fields()
+      .paginate()
+      .populate("rider", "-password")
+      .populate("driver", "-password");
+  
+  
+      
+    //  Execute the query and get the data and metadata
+    const [data, meta] = await Promise.all([
+      users.build().select("-password -auths"),
+      queryBuilder.getMeta(),
+    ]);
+  
+
+  // const allRides = await Ride.find().populate("rider", "-password").populate("driver", "-password");
 
 
-  return allRides
+  return {
+    data, meta
+  }
 };
 
 const viewRideHistroy = async (userId: string) => {

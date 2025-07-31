@@ -25,17 +25,22 @@ const requestRide = catchAsync(
 
 const getAllRides = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
+    const query = req.query as Record<string, string>;
     const decodedToken = req.user as JwtPayload
-    const result = await RideService.getAllRides(decodedToken.userId);
+    const result = await RideService.getAllRides(decodedToken.userId, query);
 
     sendResponse(res, {
       statusCode: StatusCodes.OK,
       success: true,
       message: "All Ride has been retrive successfully",
-      data: result,
+      data: result.data,
+      meta: result.meta
     });
   }
 );
+
+
+
 
 const viewRideHistroy = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
