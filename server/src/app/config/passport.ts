@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import bcrypt from "bcryptjs";
-import { Strategy as LocalStrategy } from "passport-local";
 import passport from "passport";
-import { User } from "../Modules/user/user.model";
-import { IsActive, Role } from "../Modules/user/user.interface";
 import {
   Strategy as GoogleStrategy,
   Profile,
   VerifyCallback,
 } from "passport-google-oauth20";
+import { Strategy as LocalStrategy } from "passport-local";
+import { IsActive, Role } from "../Modules/user/user.interface";
+import { User } from "../Modules/user/user.model";
 import { envVars } from "./env";
 
 // This configures Passport.js for user authentication using the Local Strategy.
@@ -28,7 +28,9 @@ passport.use(
 
         // check if user verified or unVerified
         if (!isUserExist.isVerified) {
-          return done(null, false, { message: "User not verified" });
+          return done(null, false, {
+            message: "You're not verified yet, please verify your email first",
+          });
         }
 
         // check if user is InActive or Blocked
@@ -119,21 +121,21 @@ passport.use(
         }
 
         if (!isUserExist) {
-            isUserExist = await User.create({
-                name: profile.displayName || "Google User",
-                email,
-                profilePicture: profile?.photos?.[0]?.value,
-                role: Role.RIDER,
-                isActive: IsActive.ACTIVE,
-                isVerified: true,
-                isDeleted: false,
-                auths: [
-                    {
-                        provider: "google",
-                        providerId: profile.emails?.[0]?.value,
-                    }
-                ]
-            })
+          isUserExist = await User.create({
+            name: profile.displayName || "Google User",
+            email,
+            profilePicture: profile?.photos?.[0]?.value,
+            role: Role.RIDER,
+            isActive: IsActive.ACTIVE,
+            isVerified: true,
+            isDeleted: false,
+            auths: [
+              {
+                provider: "google",
+                providerId: profile.emails?.[0]?.value,
+              },
+            ],
+          });
         }
 
         return done(null, isUserExist);
