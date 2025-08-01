@@ -150,59 +150,59 @@ const setPassword = catchAsync(
 );
 
 // This function handles the forgot password process.
-const forgotPassword = catchAsync(
-  async (req: TRequest, res: TResponse, next: TNext) => {
-    const { email } = req.body;
+// const forgotPassword = catchAsync(
+//   async (req: TRequest, res: TResponse, next: TNext) => {
+//     const { email } = req.body;
 
-    const resetLink = await AuthService.forgotPassword(email);
+//     const resetLink = await AuthService.forgotPassword(email);
 
-    sendResponse(res, {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: "Password reset link sent successfully",
-      data: resetLink,
-    });
-  }
-);
+//     sendResponse(res, {
+//       statusCode: StatusCodes.OK,
+//       success: true,
+//       message: "Password reset link sent successfully",
+//       data: resetLink,
+//     });
+//   }
+// );
 
 // This function handles resetting the user's password.
-const resetPassword = catchAsync(
-  async (req: TRequest, res: TResponse, next: TNext) => {
-    const decodedToken = req.user as JwtPayload;
+// const resetPassword = catchAsync(
+//   async (req: TRequest, res: TResponse, next: TNext) => {
+//     const decodedToken = req.user as JwtPayload;
 
-    await AuthService.resetPassword(req.body, decodedToken);
+//     await AuthService.resetPassword(req.body, decodedToken);
 
-    sendResponse(res, {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: "Password reset successfully",
-      data: null,
-    });
-  }
-);
+//     sendResponse(res, {
+//       statusCode: StatusCodes.OK,
+//       success: true,
+//       message: "Password reset successfully",
+//       data: null,
+//     });
+//   }
+// );
 
 // This function handles the Google OAuth callback.
-const googleCallbackURL = catchAsync(
-  async (req: TRequest, res: TResponse, next: TNext) => {
-    let redirectTo = req.query.state ? (req.query.state as string) : "";
+// const googleCallbackURL = catchAsync(
+//   async (req: TRequest, res: TResponse, next: TNext) => {
+//     let redirectTo = req.query.state ? (req.query.state as string) : "";
 
-    const user = req.user;
+//     const user = req.user;
 
-    if (!user) {
-      throw new AppError(StatusCodes.NOT_FOUND, "User not found");
-    }
+//     if (!user) {
+//       throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+//     }
 
-    if (redirectTo.startsWith("/")) {
-      redirectTo = redirectTo.slice(1);
-    }
+//     if (redirectTo.startsWith("/")) {
+//       redirectTo = redirectTo.slice(1);
+//     }
 
-    const tokenInfo = createUserToken(user);
+//     const tokenInfo = createUserToken(user);
 
-    setAuthCookie(res, tokenInfo);
+//     setAuthCookie(res, tokenInfo);
 
-    return res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
-  }
-);
+//     return res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
+//   }
+// );
 
 export const AuthController = {
   credentialsLogin,
@@ -210,7 +210,7 @@ export const AuthController = {
   logout,
   changePassword,
   setPassword,
-  forgotPassword,
-  resetPassword,
-  googleCallbackURL,
+  // forgotPassword,
+  // resetPassword,
+  // googleCallbackURL,
 };
