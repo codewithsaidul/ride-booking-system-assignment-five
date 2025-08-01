@@ -27,16 +27,6 @@ const transport = nodemailer.createTransport({
   host: envVars.EMAIL_SENDER.SMTP_HOST,
 });
 
-// eslint-disable-next-line no-console
-console.log({
-  secure: true,
-  auth: {
-    user: envVars.EMAIL_SENDER.SMTP_USER,
-    pass: envVars.EMAIL_SENDER.SMTP_PASS,
-  },
-  port: Number(envVars.EMAIL_SENDER.SMTP_PORT),
-  host: envVars.EMAIL_SENDER.SMTP_HOST
-});
 
 export const sendEmail = async ({
   to,
@@ -60,8 +50,6 @@ export const sendEmail = async ({
       })),
     });
   } catch (err: any) {
-    // eslint-disable-next-line no-console
-    console.log("Sending mail error", err)
     throw new AppError(401, "Email Sending Failed", err);
   }
 };

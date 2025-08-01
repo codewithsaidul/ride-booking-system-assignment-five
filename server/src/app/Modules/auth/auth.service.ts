@@ -158,8 +158,6 @@ const forgotPassword = async (email: string) => {
     );
   }
 
-  // eslint-disable-next-line no-console
-  console.log("Forgot Email: ", email)
 
   // check if user is InActive or Blocked
   if (
