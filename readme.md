@@ -22,6 +22,13 @@ The API is deployed on Vercel. You can test the endpoints using the base URL bel
 
 - `Default Verification:` Users are automatically marked as verified upon registration.
 
+
+
+
+## 🚕 Ride & Fare Logic
+- `Dynamic Fare Calculation:` Fares are automatically calculated based on the travel distance. The formula used is:
+    ``Total Fare`` = Base Fare + (Per Kilometer Fare * Distance in KM)
+
 <br> </br>
 
 ##### 🚴 Rider Features
