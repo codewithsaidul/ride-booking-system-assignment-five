@@ -59,8 +59,6 @@ const getAllUsers = async (query: Record<string, string>) => {
     .fields()
     .paginate();
 
-
-    
   //  Execute the query and get the data and metadata
   const [data, meta] = await Promise.all([
     users.build().select("-password -auths"),
@@ -73,7 +71,6 @@ const getAllUsers = async (query: Record<string, string>) => {
   };
 };
 
-
 const getMe = async (userId: string) => {
   const user = await User.findById(userId).select("-password");
   if (!user) {
@@ -81,9 +78,11 @@ const getMe = async (userId: string) => {
   }
 
   if (user._id.toString() !== userId) {
-    throw new AppError(StatusCodes.FORBIDDEN, "You are not authorized to perform this action");
+    throw new AppError(
+      StatusCodes.FORBIDDEN,
+      "You are not authorized to perform this action"
+    );
   }
-
 
   return user;
 };
