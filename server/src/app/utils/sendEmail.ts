@@ -35,7 +35,7 @@ console.log({
     pass: envVars.EMAIL_SENDER.SMTP_PASS,
   },
   port: Number(envVars.EMAIL_SENDER.SMTP_PORT),
-  host: envVars.EMAIL_SENDER.SMTP_HOST,
+  host: envVars.EMAIL_SENDER.SMTP_HOST
 });
 
 export const sendEmail = async ({
@@ -59,7 +59,9 @@ export const sendEmail = async ({
         contentType: attachment.contentType,
       })),
     });
-  } catch {
-    throw new AppError(401, "Email Sending Failed");
+  } catch (err: any) {
+    // eslint-disable-next-line no-console
+    console.log("Sending mail error", err)
+    throw new AppError(401, "Email Sending Failed", err);
   }
 };
