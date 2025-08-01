@@ -151,12 +151,15 @@ const forgotPassword = async (email: string) => {
     throw new AppError(StatusCodes.NOT_FOUND, "User not found");
   }
 
-  if (!isUserExist.isVerified) {
+  if (isUserExist.isVerified) {
     throw new AppError(
       StatusCodes.BAD_REQUEST,
-      "Your account is not verified. Please verify your account first."
+      "You already verified your account"
     );
   }
+
+  // eslint-disable-next-line no-console
+  console.log("Forgot Email: ", email)
 
   // check if user is InActive or Blocked
   if (
