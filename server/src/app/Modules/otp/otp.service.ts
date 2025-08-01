@@ -53,6 +53,9 @@ const sendOtp = async (name: string, email: string) => {
   return null;
 };
 
+
+
+
 const verifyOtp = async (email: string, otp: string) => {
   const isUserExist = await User.findOne({ email });
 
