@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import bcrypt from "bcryptjs";
 import passport from "passport";
-import {
-  Strategy as GoogleStrategy,
-  Profile,
-  VerifyCallback,
-} from "passport-google-oauth20";
+// import {
+//   Strategy as GoogleStrategy,
+//   Profile,
+//   VerifyCallback,
+// } from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-local";
-import { IsActive, Role } from "../Modules/user/user.interface";
+import { IsActive } from "../Modules/user/user.interface";
 import { User } from "../Modules/user/user.model";
-import { envVars } from "./env";
+// import { envVars } from "./env";
 
 // This configures Passport.js for user authentication using the Local Strategy.
 passport.use(
@@ -76,75 +76,75 @@ passport.use(
   )
 );
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: envVars.GOOGLE.GOOGLE_CLIENT_ID,
-      clientSecret: envVars.GOOGLE.GOOGLE_CLIENT_SECRET,
-      callbackURL: envVars.GOOGLE.GOOGLE_CALLBACK_URL,
-    },
-    async (
-      accessToken: string,
-      refreshToken: string,
-      profile: Profile,
-      done: VerifyCallback
-    ) => {
-      try {
-        const email = profile.emails?.[0]?.value;
+// passport.use(
+//   new GoogleStrategy(
+//     {
+//       clientID: envVars.GOOGLE.GOOGLE_CLIENT_ID,
+//       clientSecret: envVars.GOOGLE.GOOGLE_CLIENT_SECRET,
+//       callbackURL: envVars.GOOGLE.GOOGLE_CALLBACK_URL,
+//     },
+//     async (
+//       accessToken: string,
+//       refreshToken: string,
+//       profile: Profile,
+//       done: VerifyCallback
+//     ) => {
+//       try {
+//         const email = profile.emails?.[0]?.value;
 
-        if (!email) {
-          return done(new Error("No email found"));
-        }
+//         if (!email) {
+//           return done(new Error("No email found"));
+//         }
 
-        let isUserExist = await User.findOne({ email });
+//         let isUserExist = await User.findOne({ email });
 
-        if (isUserExist && !isUserExist.isVerified) {
-          return done(null, false, {
-            message: "You're not verified. please verify your email first",
-          });
-        }
+//         if (isUserExist && !isUserExist.isVerified) {
+//           return done(null, false, {
+//             message: "You're not verified. please verify your email first",
+//           });
+//         }
 
-        // check if user is InActive or Blocked
-        if (
-          isUserExist &&
-          (isUserExist.isActive === IsActive.INACTIVE ||
-            isUserExist.isActive === IsActive.BLOCKED)
-        ) {
-          return done(null, false, {
-            message: `User is ${isUserExist.isActive}, please contact our support team.`,
-          });
-        }
+//         // check if user is InActive or Blocked
+//         if (
+//           isUserExist &&
+//           (isUserExist.isActive === IsActive.INACTIVE ||
+//             isUserExist.isActive === IsActive.BLOCKED)
+//         ) {
+//           return done(null, false, {
+//             message: `User is ${isUserExist.isActive}, please contact our support team.`,
+//           });
+//         }
 
-        // check if user is deleted
-        if (isUserExist && isUserExist.isDeleted) {
-          return done(null, false, { message: "User is deleted." });
-        }
+//         // check if user is deleted
+//         if (isUserExist && isUserExist.isDeleted) {
+//           return done(null, false, { message: "User is deleted." });
+//         }
 
-        if (!isUserExist) {
-          isUserExist = await User.create({
-            name: profile.displayName || "Google User",
-            email,
-            profilePicture: profile?.photos?.[0]?.value,
-            role: Role.RIDER,
-            isActive: IsActive.ACTIVE,
-            isVerified: true,
-            isDeleted: false,
-            auths: [
-              {
-                provider: "google",
-                providerId: profile.emails?.[0]?.value,
-              },
-            ],
-          });
-        }
+//         if (!isUserExist) {
+//           isUserExist = await User.create({
+//             name: profile.displayName || "Google User",
+//             email,
+//             profilePicture: profile?.photos?.[0]?.value,
+//             role: Role.RIDER,
+//             isActive: IsActive.ACTIVE,
+//             isVerified: true,
+//             isDeleted: false,
+//             auths: [
+//               {
+//                 provider: "google",
+//                 providerId: profile.emails?.[0]?.value,
+//               },
+//             ],
+//           });
+//         }
 
-        return done(null, isUserExist);
-      } catch (error) {
-        done(error);
-      }
-    }
-  )
-);
+//         return done(null, isUserExist);
+//       } catch (error) {
+//         done(error);
+//       }
+//     }
+//   )
+// );
 
 // Serialize and deserialize user for session management
 passport.serializeUser((user: any, done: (err: any, id?: unknown) => void) => {
