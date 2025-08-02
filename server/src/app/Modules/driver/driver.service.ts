@@ -32,8 +32,8 @@ const applyForDriver = async (
   // checking authorized user or not
   if (isUserExist._id.toString() !== decodedToken.userId) {
     throw new AppError(
-      StatusCodes.UNAUTHORIZED,
-      "Youre not authorized to perform this action"
+      StatusCodes.FORBIDDEN,
+      "You're not authorized to perform this action"
     );
   }
 
@@ -49,7 +49,7 @@ const applyForDriver = async (
   const isApplicationExist = await DriverApplication.findOne({
     driver: decodedToken.userId,
   });
-  if (!isApplicationExist) {
+  if (isApplicationExist) {
     throw new AppError(
       StatusCodes.BAD_REQUEST,
       "You have already submitted a driver application"
@@ -60,7 +60,7 @@ const applyForDriver = async (
   if (isUserExist.role === Role.DRIVER) {
     throw new AppError(
       StatusCodes.BAD_REQUEST,
-      "You have already registred as drive"
+      "You have already registred as driver"
     );
   }
 
@@ -87,8 +87,8 @@ const getAllDriverApplication = async (
   // checking authorized user or not
   if (isUserExist._id.toString() !== userId) {
     throw new AppError(
-      StatusCodes.UNAUTHORIZED,
-      "Youre not authorized to perform this action"
+      StatusCodes.FORBIDDEN,
+      "You're not authorized to perform this action"
     );
   }
 
@@ -123,7 +123,7 @@ const getAllDriver = async (userId: string, query: Record<string, string>) => {
   // checking authorized user or not
   if (isUserExist._id.toString() !== userId) {
     throw new AppError(
-      StatusCodes.UNAUTHORIZED,
+      StatusCodes.FORBIDDEN,
       "You're not authorized to perform this action"
     );
   }
@@ -239,8 +239,8 @@ const updateDriverAvailityStatus = async (
   // prevent unauthorized user
   if (isDriverExist.driver.toString() !== decodedToken.userId) {
     throw new AppError(
-      StatusCodes.UNAUTHORIZED,
-      "Youre not authorized to perform this action"
+      StatusCodes.FORBIDDEN,
+      "You're not authorized to perform this action"
     );
   }
 
