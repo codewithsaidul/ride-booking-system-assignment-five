@@ -2,6 +2,8 @@ import { Schema, model } from "mongoose";
 import { RideStatus } from "./ride.interface"; // enum টি import করো
 import { IRides } from "./ride.interface";
 
+
+
 const rideLocationSchema = new Schema(
   {
     type: {
@@ -12,6 +14,23 @@ const rideLocationSchema = new Schema(
     coordinates: {
       type: [Number], // [longitude, latitude]
       required: true,
+    },
+  },
+  { _id: false }
+);
+
+
+
+const statusLogSchema = new Schema( // ১. স্কিমার নাম পরিবর্তন
+  {
+    status: { // ২. ফিল্ডের নাম 'status' করা হয়েছে
+      type: String,
+      enum: Object.values(RideStatus),
+      default: RideStatus.REQUESTED
+    },
+    timestamp: { // ৩. টাইমস্ট্যাম্প ফিল্ড যোগ করা হয়েছে
+      type: Date,
+      default: Date.now,
     },
   },
   { _id: false }
@@ -29,11 +48,14 @@ const rideSchema = new Schema<IRides>(
       ref: "User",
       default: null
     },
-    pickedupLocation: {
+    paymentMethod: { type: String, enum: ['cash', 'card'], default: 'cash' },
+    pickupAddress: { type: String, required: true},
+    destinationAddress: { type: String, required: true},
+    pickupCoordinates: {
       type: rideLocationSchema,
       required: true,
     },
-    destinationLocation: {
+    destinationCoordinates: {
       type: rideLocationSchema,
       required: true,
     },
@@ -47,28 +69,9 @@ const rideSchema = new Schema<IRides>(
       enum: Object.values(RideStatus),
       default: RideStatus.REQUESTED,
     },
-    requestedAt: {
-      type: Date,
-      default: Date.now,
-    },
-    rejectedAt: {
-      type: Date,
-    },
-    cancelledAt: {
-      type: Date,
-    },
-    acceptedAt: {
-      type: Date,
-    },
-    pickedupAt: {
-      type: Date,
-    },
-    inTransitAt: {
-      type: Date,
-    },
-    completedAt: {
-      type: Date,
-    },
+    statusLogs: [statusLogSchema],
+    commisionRate: { type: Number, default: 0.10 },
+    platformEarnings: { type: Number }
   },
   {
     timestamps: true,

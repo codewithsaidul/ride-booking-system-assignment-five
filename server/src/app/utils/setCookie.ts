@@ -1,4 +1,3 @@
-import { envVars } from "../config/env";
 import { TResponse } from "../types/global";
 
 interface AuthToken {
@@ -11,8 +10,9 @@ export const setAuthCookie = (res: TResponse, tokenInfo: AuthToken) => {
   if (tokenInfo.accessToken) {
     res.cookie("accessToken", tokenInfo.accessToken, {
       httpOnly: true, // Safer from XSS
-      secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
-      sameSite: "none"
+      secure: true, // O
+      sameSite: "none",
+      maxAge: 3 * 24 * 60 * 60 * 1000 // 3 days expire date
     });
   }
 
@@ -20,8 +20,9 @@ export const setAuthCookie = (res: TResponse, tokenInfo: AuthToken) => {
   if (tokenInfo.refreshToken) {
     res.cookie("refreshToken", tokenInfo.refreshToken, {
       httpOnly: true,  // Safer from XSS
-      secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
-      sameSite: "none"
+      secure: true,
+      sameSite: "none",
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days expire date
     });
   }
 };

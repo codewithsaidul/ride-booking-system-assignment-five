@@ -1,21 +1,43 @@
 /* eslint-disable no-console */
-import { Server } from "http";
+import http from "http";
 import mongoose from "mongoose";
 import { envVars } from "./app/config/env";
 import app from "./app";
 import { seedAdmin } from "./app/utils/seedAdmin";
 import { connectRedis } from "./app/config/redis.config";
+import { Server as SocketIoServer } from "socket.io";
 
-
-
-let server: Server;
+let server: http.Server;
+export let io: SocketIoServer;
 const port = envVars.PORT;
 
 const startServer = async () => {
   try {
     await mongoose.connect(`${envVars.DB_URL}`);
-    server = app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
+
+    server = http.createServer(app);
+
+    io = new SocketIoServer(server, {
+      cors: {
+        origin: envVars.FRONTEND_URL,
+        methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+        credentials: true,
+      },
+    });
+
+    io.on("connection", (socket) => {
+
+      socket.on("join_ride_room", (rideId) => {
+        socket.join(rideId);
+      });
+
+      socket.on("disconnect", () => {
+        console.log(`🔌 User disconnected: ${socket.id}`);
+      });
+    });
+
+    server.listen(port, () => {
+      console.log(`Ride Booking Server running on port ${port}`);
     });
   } catch (error) {
     console.log(error);

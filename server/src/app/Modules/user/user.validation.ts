@@ -8,7 +8,10 @@ export const createUserZodSchema = z.object({
     .max(50, { message: "Name to long" }),
 
   email: z.string().email(),
-
+  role: z
+    .string({ invalid_type_error: "Role must be a string" })
+    .nonempty("Role is required")
+    .min(3, "Role must be at least 2 characters long"),
   password: z
     .string({ invalid_type_error: "Password must be string" })
     .min(8, { message: "Password must be at least 8 characters long." })
@@ -35,51 +38,82 @@ export const createUserZodSchema = z.object({
     .string({ invalid_type_error: "Address must be string" })
     .max(200, { message: "Address cannot exceed 200 characters." })
     .optional(),
+  licenseNumber: z
+    .string()
+    .min(6, "License number must be at least 6 characters")
+    .max(20, "License number must be at most 20 characters")
+    .optional(),
+
+  vehicleInfo: z
+    .object({
+      vehicleType: z.string().min(1, "Vehicle type is required").optional(),
+      model: z.string().min(1, "Model is required").optional(),
+      plate: z
+        .string()
+        .min(8, "Plate number must be at least 8 characters")
+        .max(30, "Plate number must be at most 30 characters")
+        .optional(),
+    })
+    .optional(),
 });
 
-export const updateUserZodSchema = z
-  .object({
-    name: z
-      .string({ invalid_type_error: "Name must a string" })
-      .min(3, { message: "Name to short. minimum 3 character long" })
-      .max(50, { message: "Name to long" })
-      .optional(),
-    email: z.string().email().optional(),
-    password: z
-      .string({ invalid_type_error: "Password must be string" })
-      .min(8, { message: "Password must be at least 8 characters long." })
-      .regex(/^(?=.*[A-Z])/, {
-        message: "Password must contain at least 1 uppercase letter.",
-      })
-      .regex(/^(?=.*[a-z])/, {
-        message: "Password must contain at least 1 lowercase letter.",
-      })
-      .regex(/^(?=.*[!@#$%^&*])/, {
-        message: "Password must contain at least 1 special character.",
-      })
-      .regex(/^(?=.*\d)/, {
-        message: "Password must contain at least 1 number.",
-      })
-      .optional(),
-    role: z
-      .enum(Object.values(Role) as [string])
-      .optional(),
-    isActive: z.enum(Object.values(IsActive) as [string]).optional(),
-    isDeleted: z
-      .boolean({ invalid_type_error: "isDeleted must be true or false" })
-      .optional(),
-    isVerified: z
-      .boolean({ invalid_type_error: "isVerified must be true or false" })
-      .optional(),
-    address: z
-      .string({ invalid_type_error: "Address must be string" })
-      .max(200, { message: "Address cannot exceed 200 characters." })
-      .optional(),
-    phoneNumber: z
-      .string({ invalid_type_error: "Phone Number must be string" })
-      .regex(/^(?:\+8801\d{9}|01\d{9})$/, {
-        message:
-          "Phone number must be valid for Bangladesh. Format: +8801XXXXXXXXX or 01XXXXXXXXX",
-      })
-      .optional(),
-  })
+export const updateUserZodSchema = z.object({
+  name: z
+    .string({ invalid_type_error: "Name must a string" })
+    .min(3, { message: "Name to short. minimum 3 character long" })
+    .max(50, { message: "Name to long" })
+    .optional(),
+  email: z.string().email().optional(),
+  password: z
+    .string({ invalid_type_error: "Password must be string" })
+    .min(8, { message: "Password must be at least 8 characters long." })
+    .regex(/^(?=.*[A-Z])/, {
+      message: "Password must contain at least 1 uppercase letter.",
+    })
+    .regex(/^(?=.*[a-z])/, {
+      message: "Password must contain at least 1 lowercase letter.",
+    })
+    .regex(/^(?=.*[!@#$%^&*])/, {
+      message: "Password must contain at least 1 special character.",
+    })
+    .regex(/^(?=.*\d)/, {
+      message: "Password must contain at least 1 number.",
+    })
+    .optional(),
+  role: z.enum(Object.values(Role) as [string]).optional(),
+  isActive: z.enum(Object.values(IsActive) as [string]).optional(),
+  isDeleted: z
+    .boolean({ invalid_type_error: "isDeleted must be true or false" })
+    .optional(),
+  isVerified: z
+    .boolean({ invalid_type_error: "isVerified must be true or false" })
+    .optional(),
+  address: z
+    .string({ invalid_type_error: "Address must be string" })
+    .max(200, { message: "Address cannot exceed 200 characters." })
+    .optional(),
+  phoneNumber: z
+    .string({ invalid_type_error: "Phone Number must be string" })
+    .regex(/^(?:\+8801\d{9}|01\d{9})$/, {
+      message:
+        "Phone number must be valid for Bangladesh. Format: +8801XXXXXXXXX or 01XXXXXXXXX",
+    })
+    .optional(),
+  licenseNumber: z
+    .string()
+    .min(6, "License number must be at least 6 characters")
+    .max(20, "License number must be at most 20 characters")
+    .optional(),
+
+  vehicleInfo: z
+    .object({
+      vehicleType: z.string().min(1, "Vehicle type is required").optional(),
+      model: z.string().min(1, "Model is required").optional(),
+      plate: z
+        .string()
+        .min(8, "Plate number must be at least 8 characters")
+        .max(30, "Plate number must be at most 30 characters")
+        .optional(),
+    })
+    .optional(),
+});

@@ -1,4 +1,3 @@
-
 import { StatusCodes } from "http-status-codes";
 import { JwtPayload } from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -10,6 +9,8 @@ import { driverSearchFields } from "./driver.constant";
 import { Availability, DriverStatus } from "./driver.interface";
 import { Driver } from "./driver.model";
 import { DriverApplication } from "./driverApplication.model";
+import { Ride } from "../ride/ride.model";
+import { RideStatus } from "../ride/ride.interface";
 
 const applyForDriver = async (
   payload: Partial<IUser>,
@@ -148,6 +149,39 @@ const getAllDriver = async (userId: string, query: Record<string, string>) => {
   };
 };
 
+const getDriverProfile = async (userId: string) => {
+  const isDriverExist = await Driver.findOne({ driver: userId });
+
+  if (!isDriverExist) {
+    throw new AppError(StatusCodes.NOT_FOUND, "You are not a driver!");
+  }
+
+  return isDriverExist;
+};
+
+const getIncomingRideRequest = async (
+  driverId: string,
+  query: Record<string, string>
+) => {
+  const isDriverExist = await Driver.findOne({ driver: driverId });
+
+  if (!isDriverExist) {
+    throw new AppError(StatusCodes.NOT_FOUND, "You are not a driver");
+  }
+
+  const queryBuilder = new QueryBuilder(Ride.find( { rideStatus: RideStatus.REQUESTED} ), query);
+
+  const driverApplication = queryBuilder.filter().sort().fields().paginate().populate("rider", "name phoneNumber");
+
+    const [data, meta] = await Promise.all([
+    driverApplication.build(),
+    queryBuilder.getMeta(),
+  ]);
+
+  return { data, meta}
+};
+
+
 // update driver application status by admin
 const updateDriverApplicationStatus = async (
   applicationId: string,
@@ -221,12 +255,38 @@ const updateDriverApplicationStatus = async (
   }
 };
 
+const updateDriverStatus = async (
+  driverId: string,
+  driverStatus: string,
+  decodedToken: JwtPayload
+) => {
+  if (decodedToken.role !== Role.ADMIN) {
+    throw new AppError(
+      StatusCodes.UNAUTHORIZED,
+      "You are not authorized for this action"
+    );
+  }
+
+  const isDriverExist = await Driver.findOne({ driver: driverId });
+
+  if (!isDriverExist) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Driver not found");
+  }
+
+  await Driver.findOneAndUpdate(
+    { driver: driverId },
+    { driverStatus },
+    { runValidators: true }
+  );
+
+  return true;
+};
+
 const updateDriverAvailityStatus = async (
   driverId: string,
-  decodedToken: JwtPayload,
   availability: Availability
 ) => {
-  const isDriverExist = await Driver.findById(driverId);
+  const isDriverExist = await Driver.findOne({ driver: driverId });
 
   // checking is driver exist or not
   if (!isDriverExist) {
@@ -237,7 +297,7 @@ const updateDriverAvailityStatus = async (
   }
 
   // prevent unauthorized user
-  if (isDriverExist.driver.toString() !== decodedToken.userId) {
+  if (isDriverExist.driver.toString() !== driverId) {
     throw new AppError(
       StatusCodes.FORBIDDEN,
       "You're not authorized to perform this action"
@@ -251,8 +311,8 @@ const updateDriverAvailityStatus = async (
     );
   }
 
-  const updateAvailability = await Driver.findByIdAndUpdate(
-    driverId,
+  const updateAvailability = await Driver.findOneAndUpdate(
+    { driver: driverId },
     { availability: availability },
     { new: true, runValidators: true }
   );
@@ -264,6 +324,9 @@ export const DriverService = {
   applyForDriver,
   getAllDriverApplication,
   getAllDriver,
+  getDriverProfile,
+  getIncomingRideRequest,
   updateDriverApplicationStatus,
   updateDriverAvailityStatus,
+  updateDriverStatus,
 };

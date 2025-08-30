@@ -19,14 +19,24 @@ router.post(
   DriverController.applyForDriver
 );
 router.get(
+  "/",
+  checkAuth(Role.ADMIN),
+  DriverController.getAllDriver
+);
+router.get(
   "/driver-application",
   checkAuth(Role.ADMIN),
   DriverController.getAllDriverApplication
 );
 router.get(
-  "/driver",
-  checkAuth(Role.ADMIN),
-  DriverController.getAllDriver
+  "/me",
+  checkAuth(Role.DRIVER),
+  DriverController.getDriverProfile
+);
+router.get(
+  "/incoming-request",
+  checkAuth(Role.DRIVER),
+  DriverController.getIncomingRideRequest
 );
 router.patch(
   "/driver-application/:applicationId/status",
@@ -35,7 +45,12 @@ router.patch(
   DriverController.updateDriverApplicationStatus
 );
 router.patch(
-  "/:driverId/availability",
+  "/:driverId/driverStatus",
+  checkAuth(Role.ADMIN),
+  DriverController.updateDriverStatus
+);
+router.patch(
+  "/me/availability",
   checkAuth(Role.DRIVER),
   validateRequest(updateDriveAvailityStatusZodSchema),
   DriverController.updateDriverAvailityStatus

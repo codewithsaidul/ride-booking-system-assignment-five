@@ -10,6 +10,7 @@ const router = Router();
 
 
 router.get("/stats", checkAuth(Role.ADMIN), AnalyticController.adminDashboardStats)
+router.get("/driverStats", checkAuth(Role.DRIVER), AnalyticController.driverDashboardStats)
 
 
 

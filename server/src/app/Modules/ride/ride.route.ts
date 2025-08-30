@@ -10,9 +10,11 @@ const router = Router();
 
 router.post("/", checkAuth(Role.RIDER), RideController.requestRide)
 router.get("/", checkAuth(Role.ADMIN), RideController.getAllRides)
-router.get("/histroy", checkAuth(Role.RIDER), RideController.viewRideHistroy)
+router.get("/:rideId/details", checkAuth(Role.ADMIN, Role.RIDER, Role.DRIVER), RideController.getRideDetails)
+router.get("/histroy", checkAuth(Role.RIDER, Role.DRIVER), RideController.viewRideHistroy)
 router.get("/earnings", checkAuth(Role.DRIVER), RideController.viewEarningHistory)
-router.patch("/:rideId/rideStatus", checkAuth(Role.DRIVER), RideController.updateRideStatus)
+router.get("/myActiveRide", checkAuth(Role.RIDER, Role.DRIVER), RideController.getMyActiveRide)
+router.patch("/:rideId/rideStatus", checkAuth(Role.DRIVER, Role.ADMIN), RideController.updateRideStatus)
 router.patch("/:rideId/cancel", checkAuth(Role.RIDER), RideController.cancelRide)
 
 

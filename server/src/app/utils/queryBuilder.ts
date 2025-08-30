@@ -1,31 +1,45 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Query } from "mongoose";
 import { excludedFields } from "../constants/global.constants";
 
 export class QueryBuilder<T> {
   public modelQuery: Query<T[], T>;
-  public readonly query: Record<string, string>;
+  public readonly query: Record<string, any>;
 
-  constructor(modelQuery: Query<T[], T>, query: Record<string, string>) {
+  constructor(modelQuery: Query<T[], T>, query: Record<string, any>) {
     this.modelQuery = modelQuery;
     this.query = query;
   }
 
   filter(): this {
     const filter = { ...this.query };
-
     for (const field of excludedFields) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete filter[field];
     }
 
+    // 👇 Fare Range-এর জন্য নতুন লজিক
+    const fareFilter: { $gte?: number; $lte?: number } = {};
+    if (filter.minFare) {
+      fareFilter.$gte = Number(filter.minFare);
+      delete filter.minFare; // মূল ফিল্টার থেকে মুছে দিন
+    }
+
+    if (filter.maxFare) {
+      fareFilter.$lte = Number(filter.maxFare);
+      delete filter.maxFare; // মূল ফিল্টার থেকে মুছে দিন
+    }
+
+    // যদি fareFilter-এ কোনো ডেটা থাকে, তাহলে মূল ফিল্টারে যোগ করুন
+    if (Object.keys(fareFilter).length > 0) {
+      filter.fare = fareFilter;
+    }
+    // 👆 Fare Range-এর লজিক শেষ
+
     this.modelQuery = this.modelQuery.find(filter);
 
     return this;
   }
-
-
-
-
 
   search(searchableFields: string[]): this {
     const searchTerm = this.query.searchTerm || "";
@@ -41,8 +55,12 @@ export class QueryBuilder<T> {
   }
 
   sort(): this {
-    const sort = this.query.sort || "-createdAt";
-    this.modelQuery = this.modelQuery.sort(sort);
+    const sortBy = this.query.sortBy || "createdAt";
+    const sortOrder = this.query.sortOrder || "desc";
+    const sortObject: Record<string, "asc" | "desc"> = {};
+    sortObject[sortBy] = sortOrder as "asc" | "desc";
+
+    this.modelQuery = this.modelQuery.sort(sortObject);
 
     return this;
   }
@@ -76,8 +94,9 @@ export class QueryBuilder<T> {
   async getMeta() {
     const page = Number(this.query.page) || 1;
     const limit = Number(this.query.limit) || 10;
+    const filterDocuments = this.modelQuery.getFilter()
 
-    const totalDocuments = await this.modelQuery.model.countDocuments();
+    const totalDocuments = await this.modelQuery.model.countDocuments(filterDocuments);
 
     return {
       page,

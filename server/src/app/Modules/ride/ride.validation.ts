@@ -30,8 +30,13 @@ export const createRideZodSchema = z.object({
     required_error: "Ride status is required",
     invalid_type_error: "Invalid status value",
   }),
+  pickupAddress: z
+    .string()
+    .min(5, { message: "Please enter a valid pickup address." }),
+  destinationAddress: z
+    .string()
+    .min(5, { message: "Please enter a valid destination address." }),
 });
-
 
 // export const cancelledRideZodSchema = z.object({
 //   rideStatus: z.enum(RideStatus.CANCELLED, {

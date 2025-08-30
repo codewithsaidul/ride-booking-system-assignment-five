@@ -15,3 +15,11 @@ export const ActiveRide = [
   RideStatus.PICKED_UP,
   RideStatus.IN_TRANSIT,
 ];
+
+
+
+export const statusesThatNeedVerification = [
+  RideStatus.PICKED_UP,
+  RideStatus.IN_TRANSIT,
+  RideStatus.COMPLETED,
+];

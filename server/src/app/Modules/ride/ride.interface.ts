@@ -9,6 +9,13 @@ export interface IRideLocation {
 
 
 
+export interface IStatusLog {
+  status: RideStatus;
+  timestamp: Date;
+}
+
+
+
 export enum RideStatus {
     REQUESTED = "requested",
     CANCELLED = "cancelled",
@@ -24,8 +31,10 @@ export enum RideStatus {
 export interface IRides {
     rider: Types.ObjectId;
     driver: Types.ObjectId;
-    pickedupLocation: IRideLocation;
-    destinationLocation: IRideLocation;
+    pickupCoordinates: IRideLocation;
+    destinationCoordinates: IRideLocation;
+    pickupAddress: string;
+    destinationAddress: string;
     fare: number;
     rideStatus: RideStatus;
     requestedAt: Date;
@@ -35,4 +44,8 @@ export interface IRides {
     completedAt: Date;
     pickedupAt: Date;
     inTransitAt: Date;
+    statusLogs?: IStatusLog[];
+    commisionRate?: number;
+    platformEarnings?: number;
+    paymentMethod: 'cash' | 'card'
 }

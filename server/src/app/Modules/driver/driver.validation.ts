@@ -13,8 +13,8 @@ export const driverApplicationZodSchema = z.object({
     model: z.string().min(1, "Model is required"),
     plate: z
       .string()
-      .min(5, "Plate number must be at least 5 characters")
-      .max(15, "Plate number must be at most 15 characters"),
+      .min(8, "Plate number must be at least 8 characters")
+      .max(30, "Plate number must be at most 30 characters"),
   }),
 });
 

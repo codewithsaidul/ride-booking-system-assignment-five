@@ -1,18 +1,18 @@
-import { verifyToken } from "./../utils/jwt";
 import { StatusCodes } from "http-status-codes";
-import { AppError } from "../errorHelpers/AppError";
-import { TNext, TRequest, TResponse } from "../types/global";
-import { envVars } from "../config/env";
 import { JwtPayload } from "jsonwebtoken";
+import { envVars } from "../config/env";
+import { AppError } from "../errorHelpers/AppError";
+import { IsActive, Role } from "../Modules/user/user.interface";
 import { User } from "../Modules/user/user.model";
-import { IsActive } from "../Modules/user/user.interface";
+import { TNext, TRequest, TResponse } from "../types/global";
+import { verifyToken } from "./../utils/jwt";
+import { Driver } from "../Modules/driver/driver.model";
 
 export const checkAuth =
   (...authRoles: string[]) =>
-
   async (req: TRequest, res: TResponse, next: TNext) => {
     // get the access token from the request headers
-    const accessToken = req.headers.authorization;
+    const accessToken = req.headers.authorization || req.cookies.accessToken;
 
     // if the access token is not present, throw an error
     if (!accessToken) {
@@ -24,7 +24,6 @@ export const checkAuth =
       accessToken,
       envVars.JWT.JWT_ACCESS_SECRET
     ) as JwtPayload;
-
 
     // if the token is not verified
     if (!verifiedToken) {
@@ -55,6 +54,18 @@ export const checkAuth =
       );
     }
 
+    if (isUserExist.role === Role.DRIVER) {
+      const isDriverExist = await Driver.findOne( { driver: isUserExist._id } );
+
+      if (!isDriverExist) {
+        throw new AppError(StatusCodes.NOT_FOUND, "Driver not found");
+      }
+
+      if (isDriverExist.driverStatus === "suspend") {
+        throw new AppError(StatusCodes.BAD_REQUEST, "You are suspend. Please contact with our support team");
+      }
+    }
+
     // check if user is InActive or Blocked
     if (
       isUserExist.isActive === IsActive.INACTIVE ||
@@ -70,7 +81,6 @@ export const checkAuth =
     if (isUserExist.isDeleted) {
       throw new AppError(StatusCodes.FORBIDDEN, "User is deleted.");
     }
-
 
     req.user = verifiedToken;
 

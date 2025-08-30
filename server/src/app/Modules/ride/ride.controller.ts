@@ -15,7 +15,7 @@ const requestRide = catchAsync(
     sendResponse(res, {
       statusCode: StatusCodes.CREATED,
       success: true,
-      message: "Your ride request successfully",
+      message: "Your ride request has been created successfully",
       data: result,
     });
   }
@@ -27,6 +27,7 @@ const getAllRides = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
     const query = req.query as Record<string, string>;
     const decodedToken = req.user as JwtPayload
+
     const result = await RideService.getAllRides(decodedToken.userId, query);
 
     sendResponse(res, {
@@ -39,23 +40,53 @@ const getAllRides = catchAsync(
   }
 );
 
-
-
-
-const viewRideHistroy = catchAsync(
+const getRideDetails = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
     const decodedToken = req.user as JwtPayload
-    const result = await RideService.viewRideHistroy(decodedToken.userId);
+    const { rideId } = req.params
+
+    const result = await RideService.getRideDetails(rideId, decodedToken);
 
     sendResponse(res, {
       statusCode: StatusCodes.OK,
       success: true,
-      message: "Ride Histroy has been retrive successfully",
+      message: "Ride Details has been retrive successfully",
       data: result,
     });
   }
 );
 
+
+const getMyActiveRide = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const decodedToken = req.user as JwtPayload
+
+    const result = await RideService.getMyActiveRide(decodedToken.userId);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "My Active Ride has been retrive successfully",
+      data: result,
+    });
+  }
+);
+
+const viewRideHistroy = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const query = req.query as Record<string, string>;
+    const decodedToken = req.user as JwtPayload
+    const result = await RideService.viewRideHistroy(decodedToken.userId, query);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Ride Histroy has been retrive successfully",
+      data: result.data,
+      meta: result.meta
+    });
+  }
+);
 
 
 const viewEarningHistory = catchAsync(
@@ -71,7 +102,6 @@ const viewEarningHistory = catchAsync(
     });
   }
 );
-
 
 
 const updateRideStatus = catchAsync(
@@ -109,5 +139,5 @@ const cancelRide = catchAsync(
 
 
 export const RideController = {
-    requestRide, getAllRides, viewRideHistroy, viewEarningHistory, updateRideStatus, cancelRide
+    requestRide, getAllRides, getRideDetails, viewRideHistroy, viewEarningHistory, getMyActiveRide, updateRideStatus, cancelRide
 }

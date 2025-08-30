@@ -27,6 +27,20 @@ const credentialsLogin = catchAsync(
           return next(new AppError(StatusCodes.BAD_REQUEST, err));
         }
 
+        if (!user && info.message === "User not found") {
+          return next(new AppError(StatusCodes.NOT_FOUND, info.message));
+        }
+        if (
+          !user &&
+          info.message ===
+            "You're not verified yet, please verify your email first"
+        ) {
+          return next(new AppError(StatusCodes.UNAUTHORIZED, info.message));
+        }
+        if (!user && info.message === "Incorrect password") {
+          return next(new AppError(StatusCodes.BAD_REQUEST, info.message));
+        }
+
         if (!user) {
           return next(new AppError(StatusCodes.BAD_REQUEST, info.message));
         }
@@ -43,7 +57,7 @@ const credentialsLogin = catchAsync(
             accessToken,
             refreshToken,
             user: {
-              id: user._id,
+              _id: user._id,
               name: user.name,
               email: user.email,
               profilePicture: user.profilePicture,
@@ -60,8 +74,6 @@ const credentialsLogin = catchAsync(
     )(req, res, next);
   }
 );
-
-
 
 // This function handles the generation of a new access token using a refresh token.
 const getNewAccessToken = catchAsync(
@@ -81,34 +93,29 @@ const getNewAccessToken = catchAsync(
   }
 );
 
-
-
 // This function handles log out
-const logout = catchAsync(async (req: TRequest, res: TResponse, next: TNext) => {
-  res.clearCookie("accessToken", {
-    httpOnly: true, // Safer from XSS
-    secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
-    sameSite: "lax"
-  });
+const logout = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    res.clearCookie("accessToken", {
+      httpOnly: true, // Safer from XSS
+      secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
+      sameSite: "lax",
+    });
 
+    res.clearCookie("refreshToken", {
+      httpOnly: true, // Safer from XSS
+      secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
+      sameSite: "lax",
+    });
 
-  res.clearCookie("refreshToken", {
-    httpOnly: true, // Safer from XSS
-    secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
-    sameSite: "lax"
-  });
-
-
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "User Logged Out Successfully",
-    data: null
-  })
-
-})
-
-
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "User Logged Out Successfully",
+      data: null,
+    });
+  }
+);
 
 // This function handles changing the user's password.
 const changePassword = catchAsync(
@@ -182,27 +189,27 @@ const resetPassword = catchAsync(
 );
 
 // This function handles the Google OAuth callback.
-// const googleCallbackURL = catchAsync(
-//   async (req: TRequest, res: TResponse, next: TNext) => {
-//     let redirectTo = req.query.state ? (req.query.state as string) : "";
+const googleCallbackURL = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    let redirectTo = req.query.state ? (req.query.state as string) : "";
 
-//     const user = req.user;
+    const user = req.user;
 
-//     if (!user) {
-//       throw new AppError(StatusCodes.NOT_FOUND, "User not found");
-//     }
+    if (!user) {
+      throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+    }
 
-//     if (redirectTo.startsWith("/")) {
-//       redirectTo = redirectTo.slice(1);
-//     }
+    if (redirectTo.startsWith("/")) {
+      redirectTo = redirectTo.slice(1);
+    }
 
-//     const tokenInfo = createUserToken(user);
+    const tokenInfo = createUserToken(user);
 
-//     setAuthCookie(res, tokenInfo);
+    setAuthCookie(res, tokenInfo);
 
-//     return res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
-//   }
-// );
+    return res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
+  }
+);
 
 export const AuthController = {
   credentialsLogin,
@@ -212,5 +219,5 @@ export const AuthController = {
   setPassword,
   forgotPassword,
   resetPassword,
-  // googleCallbackURL,
+  googleCallbackURL,
 };
