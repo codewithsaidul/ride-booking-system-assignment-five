@@ -19,7 +19,7 @@ const startServer = async () => {
 
     io = new SocketIoServer(server, {
       cors: {
-        origin: envVars.FRONTEND_URL,
+        origin: [envVars.FRONTEND_URL, envVars.LOCAL_FRONTEND_URL],
         methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
         credentials: true,
       },

@@ -8,6 +8,7 @@ interface ENVCONFIG {
   BCRYPT_SALT_ROUND: string;
   EXPRESS_SESSION_SECRET: string;
   FRONTEND_URL: string;
+  LOCAL_FRONTEND_URL: string;
 
   JWT: {
     JWT_ACCESS_SECRET: string;
@@ -33,13 +34,12 @@ interface ENVCONFIG {
     SMTP_FROM: string;
   };
 
-
   REDIS: {
     REDIS_HOST: string;
-REDIS_PORT: string;
-REDIS_USERNAME: string;
-REDIS_PASSWORD: string;
-  }
+    REDIS_PORT: string;
+    REDIS_USERNAME: string;
+    REDIS_PASSWORD: string;
+  };
 }
 
 const loadEnvVariable = (): ENVCONFIG => {
@@ -51,6 +51,7 @@ const loadEnvVariable = (): ENVCONFIG => {
     "EXPRESS_SESSION_SECRET",
 
     "FRONTEND_URL",
+    "LOCAL_FRONTEND_URL",
 
     "JWT_ACCESS_SECRET",
     "JWT_ACCESS_EXPIRATION_TIME",
@@ -73,7 +74,7 @@ const loadEnvVariable = (): ENVCONFIG => {
     "REDIS_HOST",
     "REDIS_PORT",
     "REDIS_USERNAME",
-    "REDIS_PASSWORD"
+    "REDIS_PASSWORD",
   ];
 
   requiredEnvVariables.forEach((key) => {
@@ -89,6 +90,7 @@ const loadEnvVariable = (): ENVCONFIG => {
     BCRYPT_SALT_ROUND: process.env.BCRYPT_SALT_ROUND as string,
     EXPRESS_SESSION_SECRET: process.env.EXPRESS_SESSION_SECRET as string,
     FRONTEND_URL: process.env.FRONTEND_URL as string,
+    LOCAL_FRONTEND_URL: process.env.LOCAL_FRONTEND_URL as string,
 
     ADMIN_EMAIL: process.env.ADMIN_EMAIL as string,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD as string,
@@ -115,7 +117,6 @@ const loadEnvVariable = (): ENVCONFIG => {
       SMTP_PASS: process.env.SMTP_PASS as string,
       SMTP_FROM: process.env.SMTP_FROM as string,
     },
-
 
     REDIS: {
       REDIS_HOST: process.env.REDIS_HOST as string,

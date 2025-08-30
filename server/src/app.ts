@@ -26,7 +26,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(compression())
 app.use(cors({
-  origin: envVars.FRONTEND_URL,
+  origin: [envVars.FRONTEND_URL, envVars.LOCAL_FRONTEND_URL],
   credentials: true
 }));
 
