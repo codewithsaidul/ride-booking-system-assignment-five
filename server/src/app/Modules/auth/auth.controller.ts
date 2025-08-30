@@ -99,13 +99,13 @@ const logout = catchAsync(
     res.clearCookie("accessToken", {
       httpOnly: true, // Safer from XSS
       secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
-      sameSite: "none",
+      sameSite: "lax",
     });
 
     res.clearCookie("refreshToken", {
       httpOnly: true, // Safer from XSS
       secure: envVars.NODE_ENV === "production", // Only sends over HTTPS on production
-      sameSite: "none",
+      sameSite: "lax",
     });
 
     sendResponse(res, {

@@ -127,14 +127,16 @@ const driverDashboardStats = async (userId: string) => {
       $match: {
         rideStatus: RideStatus.COMPLETED,
         updatedAt: { $gte: ninetyDaysAgo },
-        driver: new Types.ObjectId(userId)
+        driver: new Types.ObjectId(userId),
       },
     },
     // ধাপ ২: দিন অনুযায়ী গ্রুপ করুন এবং প্রতিদিনের মোট প্ল্যাটফর্ম আয় গণনা করুন
     {
       $group: {
         _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-        totalDriverEarnings: { $sum: { $subtract: ["$fare", "$platformEarnings"] } }, // daily platfomr income from commision
+        totalDriverEarnings: {
+          $sum: { $subtract: ["$fare", "$platformEarnings"] },
+        }, // daily platfomr income from commision
       },
     },
     // ধাপ ৩: তারিখ অনুযায়ী সাজান, যাতে চার্টে ঠিকভাবে দেখানো যায়
@@ -151,9 +153,11 @@ const driverDashboardStats = async (userId: string) => {
     },
   ]);
 
-
-
-  return { totalEarnings: driverProfile.earnings, totalCompletedRides, driverDailyEarnings };
+  return {
+    totalEarnings: driverProfile.earnings,
+    totalCompletedRides,
+    driverDailyEarnings,
+  };
 };
 
 export const AnalyticsService = {

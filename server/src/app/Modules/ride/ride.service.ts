@@ -59,6 +59,18 @@ const requestRide = async (payload: Partial<IRides>, userId: string) => {
     );
   }
 
+  const activeRide = await Ride.findOne({
+    rider: userId,
+    rideStatus: { $in: ["requested", "accepted", "picked_up", "in_transit"] },
+  });
+
+  if (activeRide) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      "You already have an active ride."
+    );
+  }
+
   const isRiderHaveActiveRide = await Ride.findOne({
     rider: userId,
     rideStatus: { $in: ActiveRide },
@@ -75,6 +87,7 @@ const requestRide = async (payload: Partial<IRides>, userId: string) => {
   const rideData = {
     ...payload,
     rider: userId,
+    riderName: isUserExist?.name,
     statusLogs: [
       {
         status: RideStatus.REQUESTED,
@@ -93,7 +106,7 @@ const requestRide = async (payload: Partial<IRides>, userId: string) => {
         ? [...payload.destinationCoordinates]
         : [],
     },
-    platformEarnings: (payload?.fare as number) * 0.1,
+    platformEarnings: Math.ceil((payload?.fare as number) * 0.1),
   };
 
   const rideRequested = await Ride.create(rideData);
@@ -303,7 +316,6 @@ const viewRideHistroy = async (
     rides.build().select("-password -auths"),
     queryBuilder.getMeta(),
   ]);
-
   return { data, meta };
 };
 
@@ -334,12 +346,27 @@ const getMyActiveRide = async (userId: string) => {
     {
       $match: {
         $or: [
-          { rider: new Types.ObjectId(userId) },
-          { driver: new Types.ObjectId(userId) },
+          {
+            $and: [
+              { rider: new Types.ObjectId(userId) },
+              {
+                rideStatus: {
+                  $in: ["requested", "accepted", "picked_up", "in_transit"],
+                },
+              },
+            ],
+          },
+          {
+            $and: [
+              { driver: new Types.ObjectId(userId) },
+              {
+                rideStatus: {
+                  $in: ["accepted", "picked_up", "in_transit"],
+                },
+              },
+            ],
+          },
         ],
-        rideStatus: {
-          $in: ["accepted", "picked_up", "in_transit"],
-        },
       },
     },
     {
@@ -487,11 +514,6 @@ const updateRideStatus = async (
       }
     }
 
-    // prevent ride cancell by driver
-    if (RideStatus.CANCELLED === newStatus) {
-      throw new AppError(StatusCodes.BAD_REQUEST, "You cann't cancel any ride");
-    }
-
     // check if rider already cancelled
     if (isRideExist.rideStatus === RideStatus.CANCELLED) {
       throw new AppError(
@@ -535,6 +557,7 @@ const updateRideStatus = async (
     const updateQuery: any = {
       $set: {
         rideStatus: newStatus,
+        driverName: isUserExist?.name,
       },
       $push: {
         statusLogs: [
@@ -549,7 +572,8 @@ const updateRideStatus = async (
     //  Assgining a driver for accpeted or rejected status
     if (
       newStatus === RideStatus.ACCEPTED ||
-      newStatus === RideStatus.REJECTED
+      newStatus === RideStatus.REJECTED ||
+      newStatus === RideStatus.CANCELLED
     ) {
       updateQuery.$set.driver = userId;
     }
@@ -570,13 +594,15 @@ const updateRideStatus = async (
       session,
     });
 
-
-    if (rideStatusUpdate?.rideStatus === "completed") {
-      io.to(rideId).emit('ride_Status_updated', {
+    if (
+      rideStatusUpdate?.rideStatus === "completed" ||
+      rideStatusUpdate?.rideStatus === "cancelled"
+    ) {
+      io.to(rideId).emit("ride_Status_updated", {
         rideId,
         newStatus,
-        rideDetails: rideStatusUpdate
-      })
+        rideDetails: rideStatusUpdate,
+      });
     }
 
     await session.commitTransaction();
@@ -615,7 +641,6 @@ const cancelRide = async (
   }
 
   if (
-    isRideExist.rideStatus === RideStatus.ACCEPTED ||
     isRideExist.rideStatus === RideStatus.COMPLETED ||
     isRideExist.rideStatus === RideStatus.PICKED_UP ||
     isRideExist.rideStatus === RideStatus.REJECTED ||

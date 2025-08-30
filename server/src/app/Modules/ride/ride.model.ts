@@ -48,6 +48,14 @@ const rideSchema = new Schema<IRides>(
       ref: "User",
       default: null
     },
+    riderName: {
+      type:String,
+      required: true,
+    },
+    driverName: {
+      type: String,
+      default: null
+    },
     paymentMethod: { type: String, enum: ['cash', 'card'], default: 'cash' },
     pickupAddress: { type: String, required: true},
     destinationAddress: { type: String, required: true},

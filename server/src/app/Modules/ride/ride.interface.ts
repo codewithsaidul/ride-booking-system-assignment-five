@@ -31,6 +31,8 @@ export enum RideStatus {
 export interface IRides {
     rider: Types.ObjectId;
     driver: Types.ObjectId;
+    riderName: string;
+    driverName: string;
     pickupCoordinates: IRideLocation;
     destinationCoordinates: IRideLocation;
     pickupAddress: string;
