@@ -5,7 +5,7 @@ import { IsActive, Role } from "../user/user.interface";
 import { Ride } from "../ride/ride.model";
 import { RideStatus } from "../ride/ride.interface";
 import { startOfDay, subDays } from "date-fns"; //
-import { Availability } from "../driver/driver.interface";
+import { Availability, DriverStatus } from "../driver/driver.interface";
 import { Driver } from "../driver/driver.model";
 import { Types } from "mongoose";
 
@@ -25,6 +25,8 @@ const adminDashboardStats = async (userId: string) => {
     role: { $ne: Role.ADMIN },
     isActive: IsActive.ACTIVE,
   });
+
+  const totalSuspendedDriverPromise = Driver.countDocuments( { driverStatus: DriverStatus.SUSPEND } )
 
   const availableDriverPromise = Driver.countDocuments({
     availability: Availability.ONLINE,
@@ -80,12 +82,14 @@ const adminDashboardStats = async (userId: string) => {
   const [
     totalUsers,
     activeUser,
+    totalSuspendedUser,
     availableDriver,
     completedRides,
     totalEarnings,
   ] = await Promise.all([
     User.countDocuments(),
     activeUserCountPromise,
+    totalSuspendedDriverPromise,
     availableDriverPromise,
     completedRidesPromise,
     totalEarningsPromise,
@@ -95,7 +99,7 @@ const adminDashboardStats = async (userId: string) => {
 
   return {
     totalUsers,
-    activeUser,
+    activeUser: activeUser - totalSuspendedUser,
     availableDriver,
     completedRides,
     totalPlatformRevenue,
