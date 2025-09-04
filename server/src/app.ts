@@ -9,6 +9,7 @@ import { notFound } from "./app/middleware/notFount";
 import "./app/config/passport";
 import passport from "passport";
 import compression from "compression";
+import { metricsMiddleware } from "./app/middleware/metricsMiddleware";
 
 
 const app: Application = express();
@@ -25,6 +26,7 @@ app.set("trust proxy", 1)
 app.use(cookieParser());
 app.use(express.json());
 app.use(compression())
+app.use(metricsMiddleware)
 app.use(cors({
   origin: [envVars.FRONTEND_URL, envVars.LOCAL_FRONTEND_URL],
   credentials: true

@@ -1,0 +1,37 @@
+// RideDetailsPage.tsx
+import { useParams } from 'react-router-dom';
+import { useGetRideByIdQuery } from '@/redux/feature/ride/ride.api';
+import UnauthorizedPage from './UnauthorizedPage'; // 👈 নতুন পেজটি ইম্পোর্ট করুন
+import Loading from '@/components/loading/Loading';
+
+const RideDetailsPage = () => {
+  const { rideId } = useParams();
+  
+  // 👇 isError এবং error স্টেটটি নিন
+  const { data: rideData, isLoading, isError, error } = useGetRideByIdQuery(rideId);
+
+  // ১. প্রথমে লোডিং অবস্থা চেক করুন
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  // 👇 ২. এরপর এরর অবস্থা চেক করুন
+  if (isError) {
+    // যদি এররটি 403 Forbidden হয়
+    if (error?.status === 403) {
+      return <UnauthorizedPage />;
+    }
+    // অন্য কোনো এররের জন্য
+    return <div>An unexpected error occurred. Please try again.</div>;
+  }
+
+  // ৩. যদি কোনো লোডিং বা এরর না থাকে, তাহলে ডেটা দেখান
+  const ride = rideData?.data;
+
+  return (
+    <div>
+      <h1>Ride Details: {ride._id}</h1>
+      {/* ... আপনার পেজের বাকি কন্টেন্ট ... */}
+    </div>
+  );
+};
