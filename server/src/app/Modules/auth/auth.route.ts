@@ -36,6 +36,7 @@ router.get("/google", async (req: TRequest, res: TResponse, next: TNext) => {
   passport.authenticate("google", {
     scope: ["profile", "email"],
     state: redirect as string,
+    prompt: "select_account",
   })(req, res, next);
 });
 

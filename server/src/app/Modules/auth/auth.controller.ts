@@ -205,9 +205,10 @@ const googleCallbackURL = catchAsync(
 
     const tokenInfo = createUserToken(user);
 
+
     setAuthCookie(res, tokenInfo);
 
-    return res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
+    return res.redirect(`${envVars.NODE_ENV !== "production" ? envVars.LOCAL_FRONTEND_URL : envVars.FRONTEND_URL}/${redirectTo}`);
   }
 );
 
