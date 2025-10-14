@@ -16,7 +16,34 @@ const createUser = catchAsync(
     sendResponse(res, {
       statusCode: StatusCodes.CREATED,
       success: true,
-      message: `${user.role === "rider" ? "Rider" : "Driver"} account has been created successfully`,
+      message: `A verification email has been sent to your email. Please check your inbox to verify your account.`,
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        profilePicture: user.profilePicture,
+        phoneNumber: user.phoneNumber,
+        address: user.address,
+        role: user.role,
+        isVerified: user.isVerified,
+        isActive: user.isActive,
+        isDeleted: user.isDeleted,
+      },
+    });
+  }
+);
+
+// verify user email
+const verifyUser = catchAsync(
+  async (req: TRequest, res: TResponse, next: TNext) => {
+    const { user, message } = await UserService.verifyUser(
+      req.query.token as string
+    );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: message,
       data: {
         _id: user._id,
         name: user.name,
@@ -34,7 +61,6 @@ const createUser = catchAsync(
 );
 
 // Function to get all users
-
 const getAllUsers = catchAsync(
   async (req: TRequest, res: TResponse, next: TNext) => {
     //  logic for getting all users goes here
@@ -131,6 +157,7 @@ const deleteUser = catchAsync(
 // Exporting the UserController object with methods
 export const UserController = {
   createUser,
+  verifyUser,
   getMe,
   getAllUsers,
   updateUserStatus,

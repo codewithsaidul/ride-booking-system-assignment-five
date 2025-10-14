@@ -13,6 +13,7 @@ const router = Router();
 // checkAuth middlerware added on auth branch
 
 router.post("/register", validateRequest(createUserZodSchema), UserController.createUser);
+router.get("/verify-email", UserController.verifyUser);
 router.get("/all-users", checkAuth(Role.ADMIN), UserController.getAllUsers);
 router.get("/me", checkAuth(...Object.values(Role)), UserController.getMe);
 router.patch("/:userId/userStatus", checkAuth(Role.ADMIN), UserController.updateUserStatus);

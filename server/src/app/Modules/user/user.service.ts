@@ -10,6 +10,12 @@ import { IAUTHPROVIDER, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import mongoose from "mongoose";
 import { Availability, DriverStatus } from "../driver/driver.interface";
+import jwt from "jsonwebtoken";
+import { sendEmail } from "../../utils/sendEmail";
+
+
+
+const isProd = envVars.NODE_ENV === "production"
 
 // Function to create a new user
 const createUser = async (payload: Partial<IUser>) => {
@@ -72,6 +78,26 @@ const createUser = async (payload: Partial<IUser>) => {
       await Driver.create([driverData], { session });
     }
 
+    // Generate JWT verification token (valid for 24 hours)
+    const verificationToken = jwt.sign(
+      { email: user[0].email, userId: user[0]._id, role: user[0].role },
+      envVars.JWT.JWT_REFRESH_SECRET,
+      { expiresIn: "10m" }
+    );
+
+    const verificationLink = `${isProd ? envVars.FRONTEND_URL : envVars.LOCAL_FRONTEND_URL}/verify-email?token=${verificationToken}`;
+
+    // Send verification email
+    await sendEmail({
+      to: user[0].email,
+      subject: "Verify your Rydex account",
+      templateName: "emailVerification",
+      templateData: {
+        name: user[0].name,
+        verificationLink,
+      },
+    });
+
     await session.commitTransaction();
     session.endSession();
 
@@ -81,6 +107,35 @@ const createUser = async (payload: Partial<IUser>) => {
     session.endSession();
     throw error;
   }
+};
+
+const verifyUser = async (token: string) => {
+  if (!token)
+    throw new AppError(StatusCodes.BAD_REQUEST, "Verification token missing");
+
+  // 🔐 Verify token
+  const decoded = jwt.verify(
+    token as string,
+    envVars.JWT.JWT_REFRESH_SECRET
+  ) as { email: string };
+
+  const user = await User.findOne({ email: decoded.email });
+  if (!user) throw new AppError(StatusCodes.NOT_FOUND, "User not found");
+
+  if (user.isVerified) {
+    return {
+      user,
+      message: "You are already verified",
+    };
+  }
+
+  user.isVerified = true;
+  await user.save();
+
+  return {
+    user,
+    message: "Email verified successfully. You can now login.",
+  };
 };
 
 // Function to get all users with pagination, filtering, searching, and sorting
@@ -238,7 +293,6 @@ const updateUserInfo = async (
     }
   }
 
-
   if (isUserExist?.role === Role.DRIVER) {
     const driverData = {
       vehicleInfo: {
@@ -249,8 +303,7 @@ const updateUserInfo = async (
       licenseNumber: payload?.licenseNumber,
     };
 
-
-   await Driver.findOneAndUpdate( { driver: userId }, driverData );
+    await Driver.findOneAndUpdate({ driver: userId }, driverData);
   }
 
   const updateUser = await User.findByIdAndUpdate(userId, payload, {
@@ -290,6 +343,7 @@ const deleteUser = async (userId: string) => {
 // Exporting the UserService object with methods
 export const UserService = {
   createUser,
+  verifyUser,
   getMe,
   getAllUsers,
   updateUserInfo,

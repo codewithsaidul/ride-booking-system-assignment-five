@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Email Verification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f7f7f7;
+        color: #333;
+      }
+      .container {
+        max-width: 500px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 20px;
+      }
+      .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #888;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Verify Your Email Address</h2>
+      <p>Hello <%= name %>,</p>
+      <p>
+        Thank you for signing up with <strong>Rydex</strong>!  
+        Please click the button below to verify your email address:
+      </p>
+      <a class="btn" style="color: #fff;" href="<%= verificationLink %>">Verify Email</a>
+      <p>
+        This link will expire in 10 minute.  
+        If you did not create an account, please ignore this message.
+      </p>
+      <div class="footer">&copy; 2025 Rydex Ride Booking System. All rights reserved.</div>
+    </div>
+  </body>
+</html>
