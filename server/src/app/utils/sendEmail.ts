@@ -50,6 +50,7 @@ export const sendEmail = async ({
       })),
     });
   } catch (err: any) {
+    console.log(err);
     throw new AppError(401, "Email Sending Failed", err);
   }
 };

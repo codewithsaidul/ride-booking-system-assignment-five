@@ -1,7 +1,7 @@
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
-import cookieParser from "cookie-parser"
-import expressSession from "express-session"
+import cookieParser from "cookie-parser";
+import expressSession from "express-session";
 import { router } from "./app/routes/index.route";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { envVars } from "./app/config/env";
@@ -11,26 +11,30 @@ import passport from "passport";
 import compression from "compression";
 import { metricsMiddleware } from "./app/middleware/metricsMiddleware";
 
-
 const app: Application = express();
 
-
-app.use(expressSession({
-  secret: envVars.EXPRESS_SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false
-}));
+app.use(
+  expressSession({
+    secret: envVars.EXPRESS_SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
-app.set("trust proxy", 1)
+app.set("trust proxy", 1);
 app.use(cookieParser());
 app.use(express.json());
-app.use(compression())
-app.use(metricsMiddleware)
-app.use(cors({
-  origin: [envVars.FRONTEND_URL, envVars.LOCAL_FRONTEND_URL],
-  credentials: true
-}));
+app.use(compression());
+app.use(metricsMiddleware);
+app.use(
+  cors({
+    origin: [envVars.FRONTEND_URL, envVars.LOCAL_FRONTEND_URL],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // যদি cookies/token পাঠাও
+  })
+);
 
 app.use("/api/v1", router);
 
@@ -40,7 +44,6 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use(globalErrorHandler);
 
-
-app.use(notFound)
+app.use(notFound);
 
 export default app;
