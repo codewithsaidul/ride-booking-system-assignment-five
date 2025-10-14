@@ -25,8 +25,10 @@ const transport = nodemailer.createTransport({
   },
   port: Number(envVars.EMAIL_SENDER.SMTP_PORT),
   host: envVars.EMAIL_SENDER.SMTP_HOST,
+  tls: {
+    rejectUnauthorized: false, // <--- এই লাইনটি যোগ করুন
+  },
 });
-
 
 export const sendEmail = async ({
   to,
